@@ -1,0 +1,157 @@
+:root { --navy:#0f3460; --navy-dark:#0a2647; --navy-light:#e3ecf7; --ink:#111a24; --muted:#64748b; --paper:#f6f8fb; --line:#e2e8f0; --white:#fff; --red:#b42318; --red-light:#fff1f0; --amber:#b45309; --amber-light:#fffbeb; --green:#15803d; --green-light:#ecfdf5; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color:var(--ink); background:var(--paper); }
+* { box-sizing:border-box; }
+body { margin:0; min-width:320px; background:var(--paper); }
+button, input, select, textarea { font:inherit; }
+button { cursor:pointer; }
+[hidden] { display:none !important; }
+h1,h2,h3,p { margin:0; } h1 { font-size:1.4rem; letter-spacing:-.035em; } h2 { font-size:1.08rem; letter-spacing:-.02em; } h3 { font-size:.98rem; }
+.app-shell { width:min(100%, 760px); margin:0 auto; padding:24px 18px 48px; }
+.topbar { display:flex; justify-content:space-between; align-items:center; gap:16px; }
+.eyebrow { color:var(--muted); font-size:.66rem; font-weight:800; letter-spacing:.13em; margin-bottom:4px; }
+.icon-button { display:grid; place-items:center; border:0; background:var(--white); border-radius:50%; width:38px; height:38px; font-size:1.25rem; color:var(--navy); text-decoration:none; box-shadow:0 1px 4px #0a264718; }
+.page-nav { display:flex; gap:8px; margin:20px 0 18px; padding:5px; background:#e6ecf4; border-radius:11px; }
+.page-nav a { flex:1; border-radius:8px; color:var(--muted); padding:9px; text-align:center; text-decoration:none; font-size:.8rem; font-weight:800; }
+.page-nav a.active { background:var(--white); color:var(--navy); box-shadow:0 1px 4px #0a264714; }
+
+/* Papan status login (disuntik oleh cloud.js) */
+.auth-bar { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:0 0 18px; padding:10px 12px; background:var(--white); border:1px solid var(--line); border-radius:12px; }
+.auth-info { display:flex; align-items:center; gap:8px; min-width:0; color:var(--muted); font-size:.72rem; font-weight:700; }
+.auth-info span:last-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.auth-dot { flex:none; width:8px; height:8px; border-radius:50%; background:#cbd5e1; }
+.auth-bar[data-state="online"] .auth-dot { background:#22c55e; }
+.auth-bar[data-state="busy"] .auth-dot { background:#f59e0b; }
+.auth-bar[data-state="error"] .auth-dot { background:#ef4444; }
+.auth-bar[data-state="error"] .auth-info { color:var(--red); }
+.auth-button { flex:none; border:1px solid var(--line); border-radius:9px; background:var(--navy-light); color:var(--navy); padding:8px 12px; font-size:.72rem; font-weight:800; }
+.auth-button:disabled { opacity:.55; }
+
+/* Kad ringkasan */
+.stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
+.stat { padding:15px; border-radius:15px; background:var(--white); border:1px solid var(--line); }
+.stat small,.stat span { display:block; color:var(--muted); font-size:.68rem; line-height:1.35; }
+.stat strong { display:block; margin:6px 0 3px; font-size:1.12rem; letter-spacing:-.04em; }
+.stat.outstanding { border-top:4px solid var(--navy); }
+.stat.overdue { border-top:4px solid #ef4444; } .stat.overdue strong { color:var(--red); }
+.stat.toinvoice { border-top:4px solid #f59e0b; } .stat.toinvoice strong { color:var(--amber); }
+.stat.quotes { border-top:4px solid #0ea5e9; }
+
+/* Borang */
+.new-job-section,.list-section,.danger-section { background:var(--white); border:1px solid var(--line); border-radius:18px; padding:18px; margin-bottom:16px; }
+.stack-form { display:grid; gap:12px; margin-top:14px; }
+label { display:grid; gap:6px; font-size:.78rem; font-weight:750; color:var(--muted); }
+input, select, textarea { width:100%; border:1px solid var(--line); border-radius:9px; padding:11px; color:var(--ink); background:var(--white); outline-color:var(--navy); }
+.two-columns { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.save-button { border:0; border-radius:10px; background:var(--navy); color:white; padding:13px; font-weight:800; font-size:.85rem; }
+.save-button.ghost { background:var(--navy-light); color:var(--navy); }
+.danger-button { border:1px solid #fecaca; border-radius:10px; background:var(--red-light); color:var(--red); padding:12px; font-weight:800; font-size:.8rem; width:100%; }
+.danger-section { padding:14px; }
+.section-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.count { color:var(--muted); font-size:.75rem; white-space:nowrap; }
+.form-help { color:var(--muted); font-size:.73rem; line-height:1.5; margin-top:8px; }
+.form-help:empty { display:none; }
+
+/* Penapis dan carian */
+.filter-switch { display:flex; gap:4px; padding:4px; background:#eef2f7; border-radius:10px; margin:14px 0 10px; }
+.filter-switch button { flex:1; border:0; background:transparent; color:var(--muted); border-radius:7px; padding:8px 6px; font-size:.74rem; font-weight:800; }
+.filter-switch button.active { background:var(--white); color:var(--navy); box-shadow:0 1px 4px #0a264714; }
+.search-box { margin-bottom:6px; }
+
+/* Senarai job */
+.job-list { display:grid; gap:10px; margin-top:12px; }
+.job-card { display:block; text-decoration:none; color:inherit; border:1px solid var(--line); border-left:4px solid var(--line); border-radius:13px; padding:13px; background:var(--white); }
+.job-card:hover { border-color:#cbd5e1; box-shadow:0 2px 10px #0a26470f; }
+.job-card.stage-quote { border-left-color:#0ea5e9; }
+.job-card.stage-po { border-left-color:#6366f1; }
+.job-card.stage-delivery { border-left-color:#8b5cf6; }
+.job-card.stage-toinvoice { border-left-color:#f59e0b; }
+.job-card.stage-invoiced { border-left-color:var(--navy); }
+.job-card.stage-paid { border-left-color:#22c55e; }
+.job-card.is-late { border-left-color:#ef4444; background:#fffbfb; }
+.job-card-top { display:flex; justify-content:space-between; gap:12px; }
+.job-ident { min-width:0; }
+.job-no { color:var(--muted); font-size:.64rem; font-weight:850; letter-spacing:.06em; }
+.job-ident h3 { margin:3px 0 2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.job-sub { color:var(--muted); font-size:.75rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.job-amount { text-align:right; white-space:nowrap; }
+.job-amount strong { font-size:1rem; letter-spacing:-.03em; }
+.stage-chip { display:block; margin-top:4px; color:var(--muted); font-size:.64rem; font-weight:800; }
+.job-steps { display:flex; gap:5px; margin-top:11px; }
+.step { display:grid; place-items:center; min-width:30px; height:22px; padding:0 6px; border-radius:6px; background:#eef2f7; color:#94a3b8; font-size:.6rem; font-weight:850; }
+.step.done { background:var(--navy); color:white; }
+.step.partial { background:#fef3c7; color:var(--amber); }
+.job-notes { margin-top:9px; color:var(--muted); font-size:.71rem; }
+.job-notes .late { color:var(--red); } .job-notes .warn { color:var(--amber); } .job-notes .ok { color:var(--green); }
+.empty-state { text-align:center; padding:30px 12px 14px; color:var(--muted); }
+.empty-state div { color:var(--navy); font-size:1.8rem; }
+.empty-state h3 { color:var(--ink); margin:8px 0 4px; }
+.empty-state p { font-size:.82rem; }
+
+/* Butiran job */
+.job-hero { border-radius:20px; padding:22px; color:white; background:linear-gradient(135deg,#17508f,#0a2647); box-shadow:0 12px 26px #0a26472e; margin:18px 0 14px; }
+.job-hero > p { opacity:.8; font-size:.85rem; }
+.job-hero > strong { display:block; font-size:2rem; letter-spacing:-.05em; margin:4px 0 20px; }
+.hero-breakdown { display:grid; grid-template-columns:1fr 1fr; gap:12px; border-top:1px solid #ffffff33; padding-top:14px; }
+.hero-breakdown span:nth-child(even) { border-left:1px solid #ffffff33; padding-left:14px; }
+.hero-breakdown small { display:block; opacity:.72; font-size:.68rem; }
+.hero-breakdown b { display:block; margin-top:3px; font-size:.88rem; }
+.hero-actions { margin-top:16px; }
+.hero-actions button { border:1px solid #ffffff44; background:#ffffff1f; color:white; border-radius:9px; padding:9px 13px; font-size:.75rem; font-weight:800; }
+.job-alert { padding:11px 13px; border-radius:11px; font-size:.78rem; font-weight:700; margin-bottom:14px; }
+.job-alert.danger { background:var(--red-light); color:var(--red); border:1px solid #fecaca; }
+.job-alert.warn { background:var(--amber-light); color:var(--amber); border:1px solid #fde68a; }
+.job-alert.ok { background:var(--green-light); color:var(--green); border:1px solid #bbf7d0; }
+
+.chain { display:grid; gap:10px; margin-bottom:16px; }
+.doc-card { border:1px solid var(--line); border-radius:15px; padding:15px; background:var(--white); }
+.doc-card.is-filled { border-color:#c7d7ea; }
+.doc-head { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.doc-head > div { display:flex; align-items:center; gap:9px; }
+.doc-step { display:grid; place-items:center; width:22px; height:22px; border-radius:50%; background:#eef2f7; color:var(--muted); font-size:.68rem; font-weight:850; }
+.is-filled .doc-step { background:var(--navy); color:white; }
+.doc-button { border:1px solid var(--line); border-radius:8px; background:var(--navy-light); color:var(--navy); padding:7px 12px; font-size:.73rem; font-weight:800; }
+.doc-body { margin-top:11px; }
+.doc-empty { color:var(--muted); font-size:.76rem; }
+.doc-rows { display:grid; grid-template-columns:auto 1fr; gap:5px 14px; margin:0; }
+.doc-rows dt { color:var(--muted); font-size:.72rem; font-weight:700; }
+.doc-rows dd { margin:0; font-size:.78rem; font-weight:700; text-align:right; }
+.doc-link { display:inline-block; margin-top:10px; color:var(--navy); font-size:.73rem; font-weight:800; }
+
+.payments-section .save-button { margin-top:12px; width:100%; }
+.payment-list { display:grid; gap:8px; margin-top:12px; }
+.payment-row { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--line); border-radius:11px; }
+.payment-row b { display:block; font-size:.78rem; }
+.payment-row span { display:block; margin-top:2px; color:var(--muted); font-size:.68rem; }
+.row-end { display:flex; align-items:center; gap:6px; white-space:nowrap; }
+.edit-button { border:0; background:transparent; color:#94a3b8; font-size:.95rem; padding:4px 6px; border-radius:7px; }
+.edit-button:hover { background:var(--paper); color:var(--navy); }
+
+/* Dialog */
+.sheet { width:min(100% - 24px, 540px); border:0; border-radius:18px; padding:0; box-shadow:0 20px 60px #0a264744; }
+.sheet::backdrop { background:#0a264794; }
+.sheet form { display:grid; gap:13px; padding:22px; }
+.dialog-heading { display:flex; justify-content:space-between; align-items:center; gap:14px; }
+.close-button { background:var(--paper); box-shadow:none; color:var(--ink); }
+
+/* Laporan */
+.bucket-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin:14px 0; }
+.bucket { padding:12px; border-radius:12px; background:var(--paper); border:1px solid var(--line); }
+.bucket small { display:block; color:var(--muted); font-size:.66rem; font-weight:800; }
+.bucket strong { display:block; margin-top:4px; font-size:.95rem; letter-spacing:-.03em; }
+.bucket.b0 { border-left:3px solid #22c55e; } .bucket.b1 { border-left:3px solid #0ea5e9; }
+.bucket.b2 { border-left:3px solid #f59e0b; } .bucket.b3 { border-left:3px solid #f97316; }
+.bucket.b4 { border-left:3px solid #ef4444; }
+.table-scroll { overflow-x:auto; margin-top:6px; }
+.report-table { width:100%; border-collapse:collapse; font-size:.76rem; min-width:520px; }
+.report-table th, .report-table td { padding:9px 8px; text-align:right; border-bottom:1px solid var(--line); white-space:nowrap; }
+.report-table thead th { color:var(--muted); font-size:.66rem; letter-spacing:.04em; text-transform:uppercase; }
+.report-table tbody th { text-align:left; font-weight:750; }
+.report-table .cell-total { font-weight:850; }
+.report-table .doc-empty { text-align:center; padding:18px; }
+.export-buttons { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:12px; }
+
+@media (min-width:640px) {
+  .stat-grid { grid-template-columns:repeat(4,1fr); }
+  .bucket-grid { grid-template-columns:repeat(5,1fr); }
+  .export-buttons { grid-template-columns:repeat(4,1fr); }
+  .app-shell { padding-top:34px; }
+}

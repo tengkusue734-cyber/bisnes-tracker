@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ms">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0f3460" />
+    <meta name="description" content="Jejak quotation, PO, DO, invois dan bayaran pelanggan." />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" href="favicon.ico?v=1" sizes="any" />
+    <link rel="icon" href="icon.svg?v=1" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1" />
+    <link rel="stylesheet" href="styles.css?v=1" />
+    <title>Bisnes Tracker</title>
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div><p class="eyebrow">JEJAK DOKUMEN &amp; BAYARAN</p><h1>Bisnes Tracker</h1></div>
+        <button class="icon-button" id="installButton" aria-label="Pasang aplikasi" hidden>↓</button>
+      </header>
+      <nav class="page-nav" aria-label="Navigasi utama"><a class="active" href="index.html">Pipeline</a><a href="reports.html">Laporan</a></nav>
+
+      <section class="stat-grid" aria-label="Ringkasan">
+        <article class="stat outstanding"><small>Belum dibayar</small><strong id="statOutstanding">RM0.00</strong><span id="statOutstandingCount">0 invois</span></article>
+        <article class="stat overdue"><small>Lewat tempoh</small><strong id="statOverdue">RM0.00</strong><span id="statOverdueCount">0 invois</span></article>
+        <article class="stat toinvoice"><small>Siap, belum invois</small><strong id="statToInvoice">RM0.00</strong><span id="statToInvoiceCount">0 job</span></article>
+        <article class="stat quotes"><small>Quotation tergantung</small><strong id="statQuotes">RM0.00</strong><span id="statQuotesCount">0 quotation</span></article>
+      </section>
+
+      <section class="new-job-section">
+        <div><p class="eyebrow">REKOD BARU</p><h2>Tambah job</h2></div>
+        <form id="jobForm" class="stack-form">
+          <div class="two-columns">
+            <label>Pelanggan<input id="jobCustomer" required maxlength="80" placeholder="Contoh: ABC Sdn Bhd" list="customerList" /></label>
+            <label>Tajuk kerja<input id="jobTitle" required maxlength="80" placeholder="Contoh: Bekalan & pasang signage" /></label>
+          </div>
+          <div class="two-columns">
+            <label>No job<input id="jobNo" maxlength="30" placeholder="Auto" /></label>
+            <label>Nota<input id="jobNote" maxlength="100" placeholder="Pilihan" /></label>
+          </div>
+          <button class="save-button" type="submit">Simpan job</button>
+        </form>
+        <datalist id="customerList"></datalist>
+      </section>
+
+      <section class="list-section" aria-labelledby="jobListTitle">
+        <div class="section-heading">
+          <div><p class="eyebrow">SENARAI</p><h2 id="jobListTitle">Job</h2></div>
+          <span class="count" id="jobCount">0 job</span>
+        </div>
+        <div class="filter-switch" role="group" aria-label="Tapis job">
+          <button type="button" class="active" data-filter="active">Aktif</button>
+          <button type="button" data-filter="overdue">Lewat</button>
+          <button type="button" data-filter="paid">Selesai</button>
+          <button type="button" data-filter="all">Semua</button>
+        </div>
+        <input id="searchBox" class="search-box" type="search" placeholder="Cari pelanggan, tajuk atau nombor dokumen" aria-label="Cari job" />
+        <div id="jobList" class="job-list" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <template id="emptyJobTemplate">
+      <div class="empty-state"><div>▤</div><h3>Tiada job di sini</h3><p>Tambah job baharu di atas untuk mula menjejak quotation sehingga bayaran.</p></div>
+    </template>
+    <script src="biz.js?v=1"></script>
+    <script src="app.js?v=1"></script>
+    <script type="module" src="cloud.js?v=1"></script>
+  </body>
+</html>

@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ms">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0f3460" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" href="favicon.ico?v=1" sizes="any" />
+    <link rel="icon" href="icon.svg?v=1" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1" />
+    <link rel="stylesheet" href="styles.css?v=1" />
+    <title>Butiran Job · Bisnes Tracker</title>
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div><p class="eyebrow" id="jobNoLabel">JOB</p><h1 id="jobCustomerLabel">Job</h1></div>
+        <a class="icon-button nav-home" href="index.html" aria-label="Kembali ke pipeline">←</a>
+      </header>
+
+      <section class="job-hero" aria-label="Ringkasan job">
+        <p id="jobTitleLabel">—</p>
+        <strong id="jobValueLabel">RM0.00</strong>
+        <div class="hero-breakdown">
+          <span><small>Sudah dibayar</small><b id="jobPaidLabel">RM0.00</b></span>
+          <span><small>Baki</small><b id="jobBalanceLabel">RM0.00</b></span>
+          <span><small>Peringkat</small><b id="jobStageLabel">—</b></span>
+          <span><small>Tempoh bayaran</small><b id="jobDueLabel">—</b></span>
+        </div>
+        <div class="hero-actions">
+          <button type="button" id="editJob">Edit maklumat job</button>
+        </div>
+      </section>
+
+      <div id="jobAlert" class="job-alert" hidden></div>
+
+      <section class="chain" aria-label="Rantaian dokumen">
+        <article class="doc-card" data-doc="quotation">
+          <div class="doc-head"><div><span class="doc-step">1</span><h2>Quotation</h2></div><button type="button" class="doc-button" data-open="quotation">Isi</button></div>
+          <div class="doc-body" id="docQuotation"></div>
+        </article>
+        <article class="doc-card" data-doc="po">
+          <div class="doc-head"><div><span class="doc-step">2</span><h2>PO pelanggan</h2></div><button type="button" class="doc-button" data-open="po">Isi</button></div>
+          <div class="doc-body" id="docPo"></div>
+        </article>
+        <article class="doc-card" data-doc="delivery">
+          <div class="doc-head"><div><span class="doc-step">3</span><h2>Delivery Order</h2></div><button type="button" class="doc-button" data-open="delivery">Isi</button></div>
+          <div class="doc-body" id="docDelivery"></div>
+        </article>
+        <article class="doc-card" data-doc="invoice">
+          <div class="doc-head"><div><span class="doc-step">4</span><h2>Invois</h2></div><button type="button" class="doc-button" data-open="invoice">Isi</button></div>
+          <div class="doc-body" id="docInvoice"></div>
+        </article>
+      </section>
+
+      <section class="list-section payments-section" aria-labelledby="paymentTitle">
+        <div class="section-heading">
+          <div><p class="eyebrow">5 · BAYARAN</p><h2 id="paymentTitle">Bayaran diterima</h2></div>
+          <span class="count" id="paymentCount">0 bayaran</span>
+        </div>
+        <div id="paymentList" class="payment-list" aria-live="polite"></div>
+        <button class="save-button" type="button" id="addPayment">+ Rekod bayaran</button>
+      </section>
+
+      <section class="danger-section">
+        <button type="button" class="danger-button" id="deleteJob">Padam job ini</button>
+      </section>
+    </main>
+
+    <dialog id="jobDialog" class="sheet"><form id="jobEditForm" method="dialog">
+      <div class="dialog-heading"><div><p class="eyebrow">KEMAS KINI</p><h2>Maklumat job</h2></div><button class="icon-button close-button" type="button" data-close aria-label="Tutup">×</button></div>
+      <div class="two-columns"><label>Pelanggan<input id="editCustomer" required maxlength="80" /></label><label>No job<input id="editJobNo" maxlength="30" /></label></div>
+      <label>Tajuk kerja<input id="editTitle" required maxlength="80" /></label>
+      <label>Nota<input id="editNote" maxlength="100" /></label>
+      <button class="save-button" type="submit">Simpan</button>
+    </form></dialog>
+
+    <dialog id="docDialog" class="sheet"><form id="docForm" method="dialog">
+      <div class="dialog-heading"><div><p class="eyebrow" id="docEyebrow">DOKUMEN</p><h2 id="docTitle">Dokumen</h2></div><button class="icon-button close-button" type="button" data-close aria-label="Tutup">×</button></div>
+      <div class="two-columns">
+        <label>No dokumen<input id="docNo" maxlength="40" /></label>
+        <label>Tarikh<input id="docDate" type="date" /></label>
+      </div>
+      <div class="two-columns">
+        <label id="docAmountField">Jumlah (RM)<input id="docAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" /></label>
+        <label id="docExtraField">Sah sehingga<input id="docExtraDate" type="date" /></label>
+      </div>
+      <label id="docStatusField">Status<select id="docStatus"></select></label>
+      <label id="docPersonField">Diterima oleh<input id="docPerson" maxlength="60" placeholder="Nama penerima" /></label>
+      <div class="two-columns" id="docTermsRow">
+        <label>Tempoh kredit (hari)<input id="docTerms" type="number" min="0" max="365" step="1" inputmode="numeric" placeholder="30" /></label>
+        <label>Tarikh jatuh tempo<input id="docDueDate" type="date" /></label>
+      </div>
+      <label>Link fail (Google Drive)<input id="docLink" type="url" placeholder="https://drive.google.com/..." /></label>
+      <p id="docHelp" class="form-help"></p>
+      <button class="save-button" type="submit">Simpan dokumen</button>
+      <button type="button" class="danger-button" id="clearDoc">Kosongkan dokumen ini</button>
+    </form></dialog>
+
+    <dialog id="paymentDialog" class="sheet"><form id="paymentForm" method="dialog">
+      <div class="dialog-heading"><div><p class="eyebrow">BAYARAN</p><h2 id="paymentDialogTitle">Rekod bayaran</h2></div><button class="icon-button close-button" type="button" data-close aria-label="Tutup">×</button></div>
+      <p id="paymentHelp" class="form-help"></p>
+      <div class="two-columns">
+        <label>Jumlah (RM)<input id="payAmount" type="number" min="0.01" step="0.01" inputmode="decimal" required placeholder="0.00" /></label>
+        <label>Tarikh<input id="payDate" type="date" required /></label>
+      </div>
+      <div class="two-columns">
+        <label>Kaedah<select id="payMethod"><option>Online Transfer</option><option>Cek</option><option>Cash</option><option>Kad Kredit</option><option>E-Wallet</option></select></label>
+        <label>No resit<input id="payReceipt" maxlength="40" /></label>
+      </div>
+      <label>Rujukan bank / nota<input id="payRef" maxlength="80" placeholder="Contoh: MBB 20260923-4471" /></label>
+      <button class="save-button" type="submit">Simpan bayaran</button>
+      <button type="button" class="danger-button" id="deletePayment" hidden>Padam bayaran ini</button>
+    </form></dialog>
+
+    <script src="biz.js?v=1"></script>
+    <script src="job.js?v=1"></script>
+    <script type="module" src="cloud.js?v=1"></script>
+  </body>
+</html>
