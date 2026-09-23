@@ -155,3 +155,59 @@ input, select, textarea { width:100%; border:1px solid var(--line); border-radiu
   .export-buttons { grid-template-columns:repeat(4,1fr); }
   .app-shell { padding-top:34px; }
 }
+
+/* ---------- V2: tindakan seterusnya, panduan, bahasa mudah ---------- */
+.primary-cta { display:block; width:100%; border:0; border-radius:12px; background:var(--navy); color:white; padding:15px; font-size:.92rem; font-weight:800; margin-bottom:16px; box-shadow:0 4px 14px #0a26471f; }
+.ghost-cta { border:1px solid var(--line); border-radius:11px; background:var(--white); color:var(--muted); padding:12px 14px; font-size:.8rem; font-weight:800; }
+.today-section { background:var(--white); border:1px solid var(--line); border-radius:18px; padding:18px; margin-bottom:16px; }
+.today-list { display:grid; gap:9px; margin-top:13px; }
+.today-row { display:flex; justify-content:space-between; align-items:center; gap:11px; padding:12px; border:1px solid var(--line); border-left:4px solid #0ea5e9; border-radius:12px; }
+.today-row.urgent { border-left-color:#ef4444; background:#fffbfb; }
+.today-text { min-width:0; }
+.today-text b { display:block; font-size:.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.today-text span { display:block; margin-top:3px; color:var(--muted); font-size:.72rem; }
+.today-row.urgent .today-text span { color:var(--red); font-weight:700; }
+.today-cta { flex:none; border:0; border-radius:9px; background:var(--navy); color:white; padding:10px 13px; font-size:.74rem; font-weight:800; max-width:44%; }
+.today-row.urgent .today-cta { background:#b42318; }
+.all-clear { color:var(--muted); font-size:.8rem; text-align:center; padding:16px 8px; line-height:1.5; }
+
+.next-card { background:var(--white); border:1px solid #c7d7ea; border-left:5px solid var(--navy); border-radius:16px; padding:18px; margin-bottom:16px; }
+.next-card.urgent { border-color:#fecaca; border-left-color:#ef4444; background:#fffbfb; }
+.next-card.done { border-left-color:#22c55e; }
+.next-card h2 { margin-top:2px; }
+.next-hint { color:var(--muted); font-size:.79rem; line-height:1.5; margin-top:6px; }
+.next-actions { display:grid; gap:8px; margin-top:14px; }
+.next-actions .primary-cta { margin-bottom:0; }
+.next-card.urgent .primary-cta { background:#b42318; }
+
+.job-card { padding:0; overflow:hidden; }
+.job-link { display:block; padding:13px; text-decoration:none; color:inherit; }
+.job-card.is-paid { opacity:.9; }
+.job-cta { display:block; width:100%; border:0; border-top:1px solid var(--line); background:var(--navy-light); color:var(--navy); padding:12px; font-size:.78rem; font-weight:800; text-align:center; }
+.job-card.is-late .job-cta { background:#fee2e2; color:var(--red); }
+.track { margin-top:11px; }
+.dots { display:flex; gap:5px; }
+.dot { flex:1; height:6px; border-radius:99px; background:#e2e8f0; }
+.dot.done { background:var(--navy); }
+.dot.now { background:#93c5fd; }
+.track-label { display:block; margin-top:7px; color:var(--muted); font-size:.7rem; font-weight:700; }
+.pill { display:inline-block; padding:3px 9px; border-radius:99px; background:#eef2f7; color:var(--muted); font-size:.68rem; font-weight:800; }
+.pill.late { background:var(--red-light); color:var(--red); }
+.pill.ok { background:var(--green-light); color:var(--green); }
+
+.onboard { padding:6px 4px 4px; }
+.onboard h3 { font-size:1rem; }
+.onboard p { color:var(--muted); font-size:.8rem; line-height:1.55; margin-top:8px; }
+.onboard-steps { margin:12px 0 0; padding-left:20px; display:grid; gap:7px; color:var(--muted); font-size:.79rem; line-height:1.45; }
+.onboard-steps b { color:var(--ink); }
+.onboard-actions { display:grid; gap:8px; margin-top:16px; }
+
+.chain-wrap { margin-bottom:16px; }
+.chain-wrap > summary { cursor:pointer; list-style:none; padding:13px 16px; background:var(--white); border:1px solid var(--line); border-radius:13px; color:var(--muted); font-size:.79rem; font-weight:800; }
+.chain-wrap > summary::-webkit-details-marker { display:none; }
+.chain-wrap > summary::after { content:" ▾"; }
+.chain-wrap[open] > summary { border-radius:13px 13px 0 0; border-bottom:0; }
+.chain-wrap[open] > summary::after { content:" ▴"; }
+.chain-wrap[open] .chain { border:1px solid var(--line); border-top:0; border-radius:0 0 13px 13px; padding:13px; }
+
+.toast { position:fixed; left:50%; bottom:22px; transform:translateX(-50%); z-index:50; max-width:calc(100% - 32px); background:#0a2647; color:white; padding:12px 18px; border-radius:11px; font-size:.8rem; font-weight:700; box-shadow:0 8px 24px #0a264744; }

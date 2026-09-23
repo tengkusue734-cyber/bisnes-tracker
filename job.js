@@ -1,5 +1,14 @@
 // Page butiran job — rantaian Quotation → PO → DO → Invois → Bayaran.
-const jobId = new URLSearchParams(location.search).get("id");
+const params = new URLSearchParams(location.search);
+const jobId = params.get("id");
+const autoOpen = params.get("buka");
+function toast(message) {
+  if (!message) return;
+  const box = $("#toast");
+  box.textContent = message; box.hidden = false;
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => { box.hidden = true; }, 2600);
+}
 let jobs = readJobs();
 let job = jobs.find(item => item.id === jobId);
 let openDocKey = null;
@@ -10,22 +19,22 @@ let confirmClearDoc = false;
 
 const DOC_META = {
   quotation: {
-    eyebrow: "1 · QUOTATION", title: "Quotation", prefix: "prefixQuote",
-    statuses: [["draft", "Draf"], ["sent", "Dihantar"], ["won", "Menang"], ["lost", "Kalah"], ["expired", "Luput"]],
+    eyebrow: "LANGKAH 1", title: "Sebut harga", prefix: "prefixQuote",
+    statuses: [["draft", "Draf — belum hantar"], ["sent", "Sudah dihantar"], ["won", "Pelanggan setuju"], ["lost", "Pelanggan tolak"], ["expired", "Tempoh luput"]],
     extraLabel: "Sah sehingga", showAmount: true, showExtra: true, showStatus: true, showPerson: false, showTerms: false
   },
   po: {
-    eyebrow: "2 · PO PELANGGAN", title: "PO pelanggan", prefix: "prefixPO",
+    eyebrow: "LANGKAH 2", title: "PO pelanggan", prefix: "prefixPO",
     statuses: [], extraLabel: "", showAmount: true, showExtra: false, showStatus: false, showPerson: false, showTerms: false,
-    help: "Masukkan nombor PO yang diberi oleh pelanggan, bukan nombor kau sendiri."
+    help: "Nombor PO ini datang daripada pelanggan. Kalau mereka tak bagi PO rasmi, tulis apa-apa rujukan (contoh: WhatsApp 20 Sep)."
   },
   delivery: {
-    eyebrow: "3 · DELIVERY ORDER", title: "Delivery Order", prefix: "prefixDO",
-    statuses: [["pending", "Belum hantar"], ["delivered", "Dihantar"], ["acknowledged", "Diakui terima"]],
+    eyebrow: "LANGKAH 3", title: "Penghantaran", prefix: "prefixDO",
+    statuses: [["pending", "Belum hantar"], ["delivered", "Sudah dihantar"], ["acknowledged", "Pelanggan sahkan terima"]],
     extraLabel: "", showAmount: false, showExtra: false, showStatus: true, showPerson: true, showTerms: false
   },
   invoice: {
-    eyebrow: "4 · INVOIS", title: "Invois", prefix: "prefixInvoice",
+    eyebrow: "LANGKAH 4", title: "Invois", prefix: "prefixInvoice",
     statuses: [], extraLabel: "", showAmount: true, showExtra: false, showStatus: false, showPerson: false, showTerms: true
   }
 };
@@ -110,19 +119,42 @@ function render() {
   $("#jobStageLabel").textContent = stageOf(job).label;
   $("#jobDueLabel").textContent = hasDoc(job, "invoice") ? dateLabel(dueDateOf(job)) : "—";
 
-  const alert = $("#jobAlert");
-  const late = overdueDays(job);
-  if (late) { alert.hidden = false; alert.className = "job-alert danger"; alert.textContent = `Invois lewat ${late} hari — baki ${money(balanceOf(job))}.`; }
-  else if (needsInvoice(job)) { alert.hidden = false; alert.className = "job-alert warn"; alert.textContent = "Barang/kerja sudah dihantar tetapi invois belum dikeluarkan."; }
-  else if (isPaid(job)) { alert.hidden = false; alert.className = "job-alert ok"; alert.textContent = "Selesai — invois telah dibayar penuh."; }
-  else { alert.hidden = true; }
-
+  renderNext();
   renderDoc("quotation", "#docQuotation");
   renderDoc("po", "#docPo");
   renderDoc("delivery", "#docDelivery");
   renderDoc("invoice", "#docInvoice");
   renderPayments();
 }
+
+function renderNext() {
+  const card = $("#nextCard");
+  const action = nextAction(job);
+  if (!action) {
+    card.className = "next-card done";
+    $("#nextTitle").textContent = isPaid(job) ? "Selesai — duit dah masuk 🎉" : "Tiada tindakan";
+    $("#nextHint").textContent = isPaid(job) ? "Kerja ini lengkap dari sebut harga sampai bayaran." : "Job ini ditandakan pelanggan tolak.";
+    $("#nextCta").hidden = true; $("#nextSecondary").hidden = true;
+    return;
+  }
+  card.className = `next-card${action.urgent ? " urgent" : ""}`;
+  $("#nextTitle").textContent = action.title;
+  $("#nextHint").textContent = action.hint;
+  const cta = $("#nextCta");
+  cta.hidden = false; cta.textContent = action.cta;
+  cta.dataset.instant = action.instant || ""; cta.dataset.open = action.open || "";
+  const secondary = $("#nextSecondary");
+  if (action.secondary) { secondary.hidden = false; secondary.textContent = action.secondary.cta; secondary.dataset.instant = action.secondary.instant; }
+  else secondary.hidden = true;
+}
+
+function runNext(button) {
+  if (button.dataset.instant) { const message = applyInstant(job, jobs, button.dataset.instant); saveAll(); toast(message); return; }
+  if (button.dataset.open === "payment") return openPayment(null);
+  if (button.dataset.open) return openDoc(button.dataset.open);
+}
+$("#nextCta").addEventListener("click", () => runNext($("#nextCta")));
+$("#nextSecondary").addEventListener("click", () => runNext($("#nextSecondary")));
 
 /* ---------- Edit maklumat job ---------- */
 $("#editJob").addEventListener("click", () => {
@@ -157,7 +189,7 @@ function openDoc(key) {
   const settings = readSettings();
   $("#docNo").value = doc.no || (key === "po" ? "" : nextNumber(settings[meta.prefix], allNumbers(jobs, key)));
   $("#docDate").value = doc.date || todayIso();
-  $("#docAmount").value = doc.amount || "";
+  $("#docAmount").value = doc.amount || suggestedAmount(job, key) || "";
   $("#docExtraDate").value = doc.validUntil || "";
   $("#docPerson").value = doc.person || "";
   $("#docTerms").value = doc.terms ?? settings.terms;
@@ -199,6 +231,7 @@ $("#docForm").addEventListener("submit", event => {
   if (key === "invoice" && doc.date && !doc.dueDate) job.invoice.dueDate = dueDateOf(job);
   $("#docDialog").close();
   saveAll();
+  toast(`${DOC_META[key].title} disimpan.`);
 });
 
 $("#clearDoc").addEventListener("click", () => {
@@ -234,7 +267,7 @@ function openPayment(paymentId) {
   $("#paymentHelp").textContent = hasDoc(job, "invoice")
     ? `Invois ${job.invoice.no || ""} ${money(invoiced(job))} · baki semasa ${money(balanceOf(job))}`
     : "Belum ada invois untuk job ini — bayaran tetap boleh direkod (contoh: deposit).";
-  $("#payAmount").value = payment ? payment.amount : "";
+  $("#payAmount").value = payment ? payment.amount : (balanceOf(job) || "");
   $("#payDate").value = payment ? payment.date : todayIso();
   $("#payMethod").value = payment ? payment.method || "Online Transfer" : "Online Transfer";
   $("#payReceipt").value = payment ? payment.receiptNo || "" : nextNumber(settings.prefixReceipt, jobs.flatMap(item => paymentsOf(item).map(entry => entry.receiptNo)).filter(Boolean));
@@ -270,7 +303,7 @@ $("#deletePayment").addEventListener("click", () => {
 
 /* ---------- Padam job ---------- */
 $("#deleteJob").addEventListener("click", () => {
-  if (!confirmDeleteJob) { confirmDeleteJob = true; $("#deleteJob").textContent = "Tekan sekali lagi untuk padam job"; return; }
+  if (!confirmDeleteJob) { confirmDeleteJob = true; $("#deleteJob").textContent = "Tekan sekali lagi untuk padam kerja ini"; return; }
   writeJobs(jobs.filter(item => item.id !== job.id));
   location.href = "index.html";
 });
@@ -280,7 +313,10 @@ document.addEventListener("ft-cloud-data", () => { jobs = readJobs(); job = jobs
 if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("service-worker.js"));
 
 if (!job) {
-  document.querySelector(".app-shell").innerHTML = '<header class="topbar"><div><p class="eyebrow">BISNES TRACKER</p><h1>Job tidak dijumpai</h1></div><a class="icon-button nav-home" href="index.html">←</a></header><p class="doc-empty">Rekod ini mungkin sudah dipadam. <a href="index.html">Kembali ke pipeline</a>.</p>';
+  document.querySelector(".app-shell").innerHTML = '<header class="topbar"><div><p class="eyebrow">BISNES TRACKER</p><h1>Kerja tidak dijumpai</h1></div><a class="icon-button nav-home" href="index.html">←</a></header><p class="doc-empty">Rekod ini mungkin sudah dipadam. <a href="index.html">Kembali ke senarai kerja</a>.</p>';
 } else {
   render();
+  if (autoOpen === "payment") openPayment(null);
+  else if (autoOpen && DOC_META[autoOpen]) openDoc(autoOpen);
+  if (autoOpen) history.replaceState(null, "", `job.html?id=${encodeURIComponent(jobId)}`);
 }

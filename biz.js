@@ -112,3 +112,69 @@ function downloadCsv(filename, rows) {
   document.body.append(link); link.click(); link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+/* ---------- Langkah dalam bahasa mudah ---------- */
+const STEPS = [
+  { key: "quotation", name: "Sebut harga" },
+  { key: "po", name: "PO pelanggan" },
+  { key: "delivery", name: "Penghantaran" },
+  { key: "invoice", name: "Invois" },
+  { key: "payment", name: "Bayaran" }
+];
+function stepDone(job, key) {
+  if (key === "payment") return isPaid(job);
+  if (key === "quotation") return hasDoc(job, "quotation") && (job.quotation.status === "sent" || job.quotation.status === "won");
+  if (key === "delivery") return ["delivered", "acknowledged"].includes((job.delivery || {}).status);
+  return hasDoc(job, key);
+}
+function stepsDoneCount(job) { return STEPS.filter(step => stepDone(job, step.key)).length; }
+
+/* Jumlah yang dicadang untuk peringkat seterusnya — supaya tak payah taip semula */
+function suggestedAmount(job, key) {
+  const quote = Number((job.quotation || {}).amount) || 0;
+  const po = Number((job.po || {}).amount) || 0;
+  if (key === "quotation") return Number(job.estimate) || quote;
+  if (key === "po") return quote || Number(job.estimate) || 0;
+  if (key === "invoice") return po || quote || Number(job.estimate) || 0;
+  if (key === "payment") return balanceOf(job);
+  return 0;
+}
+
+/* Apa yang patut dibuat seterusnya untuk job ini */
+function nextAction(job) {
+  const quote = job.quotation || {};
+  if (!hasDoc(job, "quotation") && !hasDoc(job, "po")) {
+    return { id: "quotation", cta: "Buat sebut harga", title: "Buat sebut harga", hint: "Rekod harga yang kau beri kepada pelanggan.", open: "quotation" };
+  }
+  if (hasDoc(job, "quotation") && quote.status === "draft") {
+    return { id: "send-quote", cta: "Tandakan sudah dihantar", title: "Hantar sebut harga", hint: `Sebut harga ${money(quote.amount)} masih draf. Tandakan bila dah dihantar kepada pelanggan.`, instant: "send-quote" };
+  }
+  if (quote.status === "lost") return null;
+  if (!hasDoc(job, "po")) {
+    return { id: "po", cta: "Pelanggan setuju — rekod PO", title: "Tunggu jawapan pelanggan", hint: "Bila pelanggan setuju, rekod nombor PO mereka di sini.", open: "po", secondary: { cta: "Pelanggan tolak", instant: "lost" } };
+  }
+  if (!stepDone(job, "delivery")) {
+    return { id: "deliver", cta: "Tandakan sudah dihantar", title: "Hantar barang / siapkan kerja", hint: "Satu tekan sahaja — nombor DO dan tarikh hari ini diisi automatik.", instant: "deliver" };
+  }
+  if (!hasDoc(job, "invoice")) {
+    return { id: "invoice", cta: `Keluarkan invois ${money(suggestedAmount(job, "invoice"))}`, title: "Keluarkan invois", hint: "Kerja dah sampai kepada pelanggan. Jumlah dan tarikh tempoh diisi automatik.", open: "invoice" };
+  }
+  if (balanceOf(job) > 0.004) {
+    const late = overdueDays(job);
+    return { id: "payment", cta: `Rekod bayaran ${money(balanceOf(job))}`, title: late ? `Kejar bayaran — lewat ${late} hari` : "Tunggu bayaran", hint: late ? `Invois sepatutnya dibayar pada ${dateLabel(dueDateOf(job))}.` : `Tempoh bayaran ${dateLabel(dueDateOf(job))}.`, open: "payment", urgent: Boolean(late) };
+  }
+  return null;
+}
+
+/* Tindakan satu-tekan */
+function applyInstant(job, jobsList, action) {
+  const settings = readSettings();
+  if (action === "send-quote") { job.quotation = { ...(job.quotation || {}), status: "sent" }; return "Sebut harga ditandakan sudah dihantar."; }
+  if (action === "lost") { job.quotation = { ...(job.quotation || {}), status: "lost" }; return "Job ditandakan pelanggan tolak."; }
+  if (action === "deliver") {
+    job.delivery = { ...(job.delivery || {}), no: (job.delivery || {}).no || nextNumber(settings.prefixDO, allNumbers(jobsList, "delivery")), date: (job.delivery || {}).date || todayIso(), status: "delivered" };
+    if (job.quotation && job.quotation.status !== "won") job.quotation.status = "won";
+    return "Ditandakan sudah dihantar.";
+  }
+  return "";
+}

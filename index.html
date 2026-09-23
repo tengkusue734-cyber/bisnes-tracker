@@ -4,66 +4,87 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0f3460" />
-    <meta name="description" content="Jejak quotation, PO, DO, invois dan bayaran pelanggan." />
+    <meta name="description" content="Jejak sebut harga, PO, penghantaran, invois dan bayaran pelanggan." />
     <link rel="manifest" href="manifest.json" />
-    <link rel="icon" href="favicon.ico?v=1" sizes="any" />
-    <link rel="icon" href="icon.svg?v=1" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1" />
-    <link rel="stylesheet" href="styles.css?v=1" />
+    <link rel="icon" href="favicon.ico?v=2" sizes="any" />
+    <link rel="icon" href="icon.svg?v=2" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2" />
+    <link rel="stylesheet" href="styles.css?v=2" />
     <title>Bisnes Tracker</title>
   </head>
   <body>
     <main class="app-shell">
       <header class="topbar">
-        <div><p class="eyebrow">JEJAK DOKUMEN &amp; BAYARAN</p><h1>Bisnes Tracker</h1></div>
+        <div><p class="eyebrow">DUIT MASUK &amp; KERJA</p><h1>Bisnes Tracker</h1></div>
         <button class="icon-button" id="installButton" aria-label="Pasang aplikasi" hidden>↓</button>
       </header>
-      <nav class="page-nav" aria-label="Navigasi utama"><a class="active" href="index.html">Pipeline</a><a href="reports.html">Laporan</a></nav>
+      <nav class="page-nav" aria-label="Navigasi utama"><a class="active" href="index.html">Kerja saya</a><a href="reports.html">Laporan</a></nav>
 
-      <section class="stat-grid" aria-label="Ringkasan">
-        <article class="stat outstanding"><small>Belum dibayar</small><strong id="statOutstanding">RM0.00</strong><span id="statOutstandingCount">0 invois</span></article>
-        <article class="stat overdue"><small>Lewat tempoh</small><strong id="statOverdue">RM0.00</strong><span id="statOverdueCount">0 invois</span></article>
-        <article class="stat toinvoice"><small>Siap, belum invois</small><strong id="statToInvoice">RM0.00</strong><span id="statToInvoiceCount">0 job</span></article>
-        <article class="stat quotes"><small>Quotation tergantung</small><strong id="statQuotes">RM0.00</strong><span id="statQuotesCount">0 quotation</span></article>
+      <section class="today-section" aria-labelledby="todayTitle">
+        <div class="section-heading">
+          <div><p class="eyebrow">LANGKAH SETERUSNYA</p><h2 id="todayTitle">Apa perlu buat</h2></div>
+          <span class="count" id="todayCount"></span>
+        </div>
+        <div id="todayList" class="today-list" aria-live="polite"></div>
       </section>
 
-      <section class="new-job-section">
-        <div><p class="eyebrow">REKOD BARU</p><h2>Tambah job</h2></div>
-        <form id="jobForm" class="stack-form">
-          <div class="two-columns">
-            <label>Pelanggan<input id="jobCustomer" required maxlength="80" placeholder="Contoh: ABC Sdn Bhd" list="customerList" /></label>
-            <label>Tajuk kerja<input id="jobTitle" required maxlength="80" placeholder="Contoh: Bekalan & pasang signage" /></label>
-          </div>
-          <div class="two-columns">
-            <label>No job<input id="jobNo" maxlength="30" placeholder="Auto" /></label>
-            <label>Nota<input id="jobNote" maxlength="100" placeholder="Pilihan" /></label>
-          </div>
-          <button class="save-button" type="submit">Simpan job</button>
-        </form>
-        <datalist id="customerList"></datalist>
+      <button class="primary-cta" type="button" id="openNewJob">+ Kerja baharu</button>
+
+      <section class="stat-grid" aria-label="Ringkasan duit">
+        <article class="stat outstanding"><small>Orang belum bayar saya</small><strong id="statOutstanding">RM0.00</strong><span id="statOutstandingCount">0 invois</span></article>
+        <article class="stat overdue"><small>Sudah lewat tempoh</small><strong id="statOverdue">RM0.00</strong><span id="statOverdueCount">0 invois</span></article>
+        <article class="stat toinvoice"><small>Siap tapi belum invois</small><strong id="statToInvoice">RM0.00</strong><span id="statToInvoiceCount">0 kerja</span></article>
+        <article class="stat quotes"><small>Sebut harga tunggu jawapan</small><strong id="statQuotes">RM0.00</strong><span id="statQuotesCount">0 sebut harga</span></article>
       </section>
 
       <section class="list-section" aria-labelledby="jobListTitle">
         <div class="section-heading">
-          <div><p class="eyebrow">SENARAI</p><h2 id="jobListTitle">Job</h2></div>
-          <span class="count" id="jobCount">0 job</span>
+          <div><p class="eyebrow">SENARAI</p><h2 id="jobListTitle">Semua kerja</h2></div>
+          <span class="count" id="jobCount">0 kerja</span>
         </div>
-        <div class="filter-switch" role="group" aria-label="Tapis job">
-          <button type="button" class="active" data-filter="active">Aktif</button>
+        <div class="filter-switch" role="group" aria-label="Tapis kerja">
+          <button type="button" class="active" data-filter="active">Berjalan</button>
           <button type="button" data-filter="overdue">Lewat</button>
-          <button type="button" data-filter="paid">Selesai</button>
+          <button type="button" data-filter="paid">Sudah selesai</button>
           <button type="button" data-filter="all">Semua</button>
         </div>
-        <input id="searchBox" class="search-box" type="search" placeholder="Cari pelanggan, tajuk atau nombor dokumen" aria-label="Cari job" />
+        <input id="searchBox" class="search-box" type="search" placeholder="Cari nama pelanggan atau nombor dokumen" aria-label="Cari kerja" />
         <div id="jobList" class="job-list" aria-live="polite"></div>
       </section>
     </main>
 
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+    <dialog id="newJobDialog" class="sheet"><form id="jobForm" method="dialog">
+      <div class="dialog-heading"><div><p class="eyebrow">KERJA BAHARU</p><h2>Tambah kerja</h2></div><button class="icon-button close-button" type="button" data-close aria-label="Tutup">×</button></div>
+      <label>Nama pelanggan<input id="jobCustomer" required maxlength="80" placeholder="Contoh: ABC Sdn Bhd" list="customerList" /></label>
+      <label>Kerja apa?<input id="jobTitle" required maxlength="80" placeholder="Contoh: Bekalan &amp; pasang signage" /></label>
+      <label>Harga yang kau beri (RM)<input id="jobEstimate" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Boleh isi kemudian" /></label>
+      <p class="form-help">Kalau kau isi harga, app terus sediakan sebut harga untuk kau — tak perlu taip dua kali.</p>
+      <button class="save-button" type="submit">Simpan &amp; teruskan</button>
+      <datalist id="customerList"></datalist>
+    </form></dialog>
+
     <template id="emptyJobTemplate">
-      <div class="empty-state"><div>▤</div><h3>Tiada job di sini</h3><p>Tambah job baharu di atas untuk mula menjejak quotation sehingga bayaran.</p></div>
+      <div class="onboard">
+        <h3>Belum ada kerja direkod</h3>
+        <p>Sistem ni jejak satu kerja dari mula sampai duit masuk. Lima langkah sahaja:</p>
+        <ol class="onboard-steps">
+          <li><b>Sebut harga</b> — harga yang kau beri kepada pelanggan</li>
+          <li><b>PO pelanggan</b> — pengesahan mereka setuju</li>
+          <li><b>Penghantaran</b> — barang dihantar atau kerja siap</li>
+          <li><b>Invois</b> — kau tuntut bayaran</li>
+          <li><b>Bayaran</b> — duit masuk, selesai</li>
+        </ol>
+        <p>App akan bagitahu kau langkah seterusnya setiap kali, dan bawa jumlah RM dari langkah sebelumnya supaya kau tak taip berulang.</p>
+        <div class="onboard-actions">
+          <button type="button" class="save-button" data-onboard="new">+ Mula kerja pertama</button>
+          <button type="button" class="save-button ghost" data-onboard="demo">Isi contoh dulu</button>
+        </div>
+      </div>
     </template>
-    <script src="biz.js?v=1"></script>
-    <script src="app.js?v=1"></script>
-    <script type="module" src="cloud.js?v=1"></script>
+    <script src="biz.js?v=2"></script>
+    <script src="app.js?v=2"></script>
+    <script type="module" src="cloud.js?v=2"></script>
   </body>
 </html>

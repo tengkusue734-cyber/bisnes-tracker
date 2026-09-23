@@ -5,20 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0f3460" />
     <link rel="manifest" href="manifest.json" />
-    <link rel="icon" href="favicon.ico?v=1" sizes="any" />
-    <link rel="icon" href="icon.svg?v=1" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1" />
-    <link rel="stylesheet" href="styles.css?v=1" />
+    <link rel="icon" href="favicon.ico?v=2" sizes="any" />
+    <link rel="icon" href="icon.svg?v=2" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2" />
+    <link rel="stylesheet" href="styles.css?v=2" />
     <title>Laporan · Bisnes Tracker</title>
   </head>
   <body>
     <main class="app-shell">
       <header class="topbar"><div><p class="eyebrow">UNTUK AKAUN</p><h1>Laporan</h1></div><a class="icon-button nav-home" href="index.html" aria-label="Kembali ke pipeline">←</a></header>
-      <nav class="page-nav" aria-label="Navigasi utama"><a href="index.html">Pipeline</a><a class="active" href="reports.html">Laporan</a></nav>
+      <nav class="page-nav" aria-label="Navigasi utama"><a href="index.html">Kerja saya</a><a class="active" href="reports.html">Laporan</a></nav>
 
       <section class="list-section" aria-labelledby="agedTitle">
         <div class="section-heading">
-          <div><p class="eyebrow">HUTANG PELANGGAN</p><h2 id="agedTitle">Aged receivable</h2></div>
+          <div><p class="eyebrow">HUTANG PELANGGAN (AGED RECEIVABLE)</p><h2 id="agedTitle">Siapa hutang kau, berapa lama</h2></div>
           <span class="count" id="agedTotal">RM0.00</span>
         </div>
         <div class="bucket-grid" id="bucketGrid"></div>
@@ -29,17 +29,17 @@
       </section>
 
       <section class="list-section" aria-labelledby="exportTitle">
-        <div class="section-heading"><div><p class="eyebrow">EXPORT</p><h2 id="exportTitle">Fail untuk akauntan</h2></div></div>
+        <div class="section-heading"><div><p class="eyebrow">EXPORT</p><h2 id="exportTitle">Hantar kepada akauntan</h2></div></div>
         <div class="two-columns">
           <label>Dari tarikh<input id="fromDate" type="date" /></label>
           <label>Hingga tarikh<input id="toDate" type="date" /></label>
         </div>
         <p class="form-help">Fail CSV boleh dibuka dalam Excel atau diimport ke SQL Account, AutoCount, Xero dan QuickBooks.</p>
         <div class="export-buttons">
-          <button type="button" class="save-button" id="exportSales">Sales register</button>
-          <button type="button" class="save-button" id="exportPayments">Payment register</button>
-          <button type="button" class="save-button" id="exportAged">Aged receivable</button>
-          <button type="button" class="save-button ghost" id="exportAll">Semua job (backup)</button>
+          <button type="button" class="save-button" id="exportSales">Senarai invois</button>
+          <button type="button" class="save-button" id="exportPayments">Senarai bayaran</button>
+          <button type="button" class="save-button" id="exportAged">Hutang pelanggan</button>
+          <button type="button" class="save-button ghost" id="exportAll">Simpanan semua data</button>
         </div>
         <p id="exportStatus" class="form-help"></p>
       </section>
@@ -57,8 +57,8 @@
         <p id="settingsStatus" class="form-help"></p>
       </section>
     </main>
-    <script src="biz.js?v=1"></script>
-    <script src="reports.js?v=1"></script>
-    <script type="module" src="cloud.js?v=1"></script>
+    <script src="biz.js?v=2"></script>
+    <script src="reports.js?v=2"></script>
+    <script type="module" src="cloud.js?v=2"></script>
   </body>
 </html>

@@ -1,15 +1,16 @@
-// Page Pipeline — senarai job dan ringkasan.
+// Page "Kerja saya" — tindakan seterusnya, ringkasan duit dan senarai kerja.
 let jobs = readJobs();
 let jobFilter = "active";
 let searchTerm = "";
 let deferredInstallPrompt;
 
-const STEP_LABELS = [
-  { key: "quotation", short: "Q", name: "Quotation" },
-  { key: "po", short: "PO", name: "PO" },
-  { key: "delivery", short: "DO", name: "DO" },
-  { key: "invoice", short: "INV", name: "Invois" }
-];
+function toast(message) {
+  const box = $("#toast");
+  box.textContent = message;
+  box.hidden = false;
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => { box.hidden = true; }, 2600);
+}
 
 function matchesSearch(job) {
   if (!searchTerm) return true;
@@ -25,63 +26,110 @@ function visibleJobs() {
     if (jobFilter === "all") return true;
     if (jobFilter === "paid") return isPaid(job);
     if (jobFilter === "overdue") return overdueDays(job) > 0;
-    return !isPaid(job);
-  }).sort((a, b) => {
-    const diff = overdueDays(b) - overdueDays(a);
-    if (diff) return diff;
-    return (b.createdAt || 0) - (a.createdAt || 0);
+    return !isPaid(job) && (job.quotation || {}).status !== "lost";
+  }).sort((a, b) => (overdueDays(b) - overdueDays(a)) || (b.createdAt || 0) - (a.createdAt || 0));
+}
+
+/* ---------- Panel "Apa perlu buat" ---------- */
+function actionPriority(job, action) {
+  if (action.urgent) return 0;
+  if (action.id === "invoice") return 1;
+  if (action.id === "payment") return 2;
+  if (action.id === "po") return 3;
+  return 4;
+}
+
+function renderToday() {
+  const list = $("#todayList");
+  const items = jobs
+    .map(job => ({ job, action: nextAction(job) }))
+    .filter(entry => entry.action)
+    .sort((a, b) => actionPriority(a.job, a.action) - actionPriority(b.job, b.action))
+    .slice(0, 6);
+
+  $("#todayCount").textContent = items.length ? `${items.length} perkara` : "";
+  list.innerHTML = "";
+  if (!jobs.length) { $(".today-section").hidden = true; return; }
+  $(".today-section").hidden = false;
+
+  if (!items.length) {
+    list.innerHTML = `<p class="all-clear">Semua kerja sudah selesai atau menunggu pelanggan. Tiada apa perlu dibuat sekarang. 👍</p>`;
+    return;
+  }
+
+  items.forEach(({ job, action }) => {
+    const row = document.createElement("article");
+    row.className = `today-row${action.urgent ? " urgent" : ""}`;
+    row.innerHTML = `<div class="today-text"><b></b><span></span></div><button type="button" class="today-cta" data-job="${job.id}" data-action="${action.instant || ""}" data-open="${action.open || ""}"></button>`;
+    row.querySelector("b").textContent = `${job.customer} · ${job.title}`;
+    row.querySelector("span").textContent = action.title;
+    row.querySelector(".today-cta").textContent = action.cta;
+    list.append(row);
   });
 }
 
+/* ---------- Ringkasan ---------- */
 function renderStats() {
   const unpaid = jobs.filter(job => hasDoc(job, "invoice") && !isPaid(job));
   const overdue = unpaid.filter(job => overdueDays(job) > 0);
   const toInvoice = jobs.filter(needsInvoice);
   const openQuotes = jobs.filter(quoteOpen);
-
   $("#statOutstanding").textContent = money(unpaid.reduce((sum, job) => sum + balanceOf(job), 0));
   $("#statOutstandingCount").textContent = `${unpaid.length} invois`;
   $("#statOverdue").textContent = money(overdue.reduce((sum, job) => sum + balanceOf(job), 0));
   $("#statOverdueCount").textContent = `${overdue.length} invois`;
   $("#statToInvoice").textContent = money(toInvoice.reduce((sum, job) => sum + jobValue(job), 0));
-  $("#statToInvoiceCount").textContent = `${toInvoice.length} job`;
+  $("#statToInvoiceCount").textContent = `${toInvoice.length} kerja`;
   $("#statQuotes").textContent = money(openQuotes.reduce((sum, job) => sum + jobValue(job), 0));
-  $("#statQuotesCount").textContent = `${openQuotes.length} quotation`;
+  $("#statQuotesCount").textContent = `${openQuotes.length} sebut harga`;
 }
 
-function stepsMarkup(job) {
-  const paid = isPaid(job);
-  const partial = paidTotal(job) > 0;
-  const steps = STEP_LABELS.map(step => {
-    const done = hasDoc(job, step.key);
-    return `<span class="step ${done ? "done" : ""}" title="${step.name}">${step.short}</span>`;
+/* ---------- Senarai kerja ---------- */
+function trackMarkup(job) {
+  const done = stepsDoneCount(job);
+  const dots = STEPS.map((step, index) => {
+    const isDone = stepDone(job, step.key);
+    const isNow = !isDone && index === done;
+    return `<span class="dot ${isDone ? "done" : isNow ? "now" : ""}" title="${step.name}"></span>`;
   }).join("");
-  return `${steps}<span class="step ${paid ? "done" : partial ? "partial" : ""}" title="Bayaran">RM</span>`;
+  const current = STEPS[Math.min(done, STEPS.length - 1)];
+  const label = done === STEPS.length ? "Semua selesai" : `Langkah ${done + 1} daripada 5 · ${current.name}`;
+  return `<div class="track"><div class="dots">${dots}</div><span class="track-label">${label}</span></div>`;
 }
 
 function renderJobs() {
   const list = $("#jobList");
   const items = visibleJobs();
-  $("#jobCount").textContent = `${items.length} job`;
+  $("#jobCount").textContent = `${items.length} kerja`;
   list.innerHTML = "";
-  if (!items.length) { list.append($("#emptyJobTemplate").content.cloneNode(true)); return; }
+  if (!jobs.length) { list.append($("#emptyJobTemplate").content.cloneNode(true)); return; }
+  if (!items.length) {
+    const messages = {
+      active: "Tiada kerja yang sedang berjalan. Semua dah selesai — tekan <b>Sudah selesai</b> untuk lihat rekod lama, atau mula kerja baharu di atas.",
+      overdue: "Tiada invois yang lewat tempoh. Bagus. 👍",
+      paid: "Belum ada kerja yang dibayar penuh.",
+      all: "Tiada kerja sepadan dengan carian kau."
+    };
+    list.innerHTML = `<p class="all-clear">${messages[jobFilter] || messages.all}</p>`;
+    return;
+  }
 
   items.forEach(job => {
-    const stage = stageOf(job);
+    const action = nextAction(job);
     const late = overdueDays(job);
-    const balance = balanceOf(job);
-    const card = document.createElement("a");
-    card.className = `job-card stage-${stage.key}${late ? " is-late" : ""}`;
-    card.href = `job.html?id=${encodeURIComponent(job.id)}`;
+    const card = document.createElement("article");
+    card.className = `job-card${late ? " is-late" : ""}${isPaid(job) ? " is-paid" : ""}`;
+    const status = isPaid(job) ? `<span class="pill ok">Sudah dibayar penuh</span>`
+      : late ? `<span class="pill late">Lewat ${late} hari</span>`
+      : (job.quotation || {}).status === "lost" ? `<span class="pill">Pelanggan tolak</span>`
+      : paidTotal(job) > 0 ? `<span class="pill">Baki ${money(balanceOf(job))}</span>` : "";
 
-    const notes = [];
-    if (late) notes.push(`<b class="late">Lewat ${late} hari</b>`);
-    else if (hasDoc(job, "invoice") && !isPaid(job)) notes.push(`Tempoh ${dateLabel(dueDateOf(job))}`);
-    if (needsInvoice(job)) notes.push('<b class="warn">Perlu invois</b>');
-    if (hasDoc(job, "invoice") && balance > 0 && paidTotal(job) > 0) notes.push(`Baki ${money(balance)}`);
-    if (isPaid(job)) notes.push(`<b class="ok">Dibayar penuh</b>`);
-
-    card.innerHTML = `<div class="job-card-top"><div class="job-ident"><span class="job-no"></span><h3></h3><p class="job-sub"></p></div><div class="job-amount"><strong>${money(jobValue(job))}</strong><span class="stage-chip">${stage.label}</span></div></div><div class="job-steps">${stepsMarkup(job)}</div>${notes.length ? `<div class="job-notes">${notes.join(" · ")}</div>` : ""}`;
+    card.innerHTML = `<a class="job-link" href="job.html?id=${encodeURIComponent(job.id)}">
+        <div class="job-card-top"><div class="job-ident"><span class="job-no"></span><h3></h3><p class="job-sub"></p></div><div class="job-amount"><strong>${money(jobValue(job))}</strong></div></div>
+        ${trackMarkup(job)}
+        ${status ? `<div class="job-notes">${status}</div>` : ""}
+      </a>
+      ${action ? `<button type="button" class="job-cta" data-job="${job.id}" data-action="${action.instant || ""}" data-open="${action.open || ""}">${action.cta}</button>` : ""}`;
     card.querySelector(".job-no").textContent = job.jobNo || "—";
     card.querySelector("h3").textContent = job.customer || "Tanpa nama";
     card.querySelector(".job-sub").textContent = job.title || "";
@@ -94,19 +142,61 @@ function renderCustomers() {
   $("#customerList").innerHTML = names.map(name => `<option value="${escapeHtml(name)}"></option>`).join("");
 }
 
-function renderAll() { jobs = readJobs(); renderStats(); renderJobs(); renderCustomers(); }
+function renderAll() { jobs = readJobs(); renderToday(); renderStats(); renderJobs(); renderCustomers(); }
+
+/* ---------- Tindakan ---------- */
+document.addEventListener("click", event => {
+  const button = event.target.closest("[data-job]");
+  if (!button) return;
+  const job = jobs.find(item => item.id === button.dataset.job);
+  if (!job) return;
+  if (button.dataset.action) {
+    const message = applyInstant(job, jobs, button.dataset.action);
+    writeJobs(jobs); renderAll(); toast(message);
+  } else if (button.dataset.open) {
+    location.href = `job.html?id=${encodeURIComponent(job.id)}&buka=${button.dataset.open}`;
+  }
+});
+
+$("#openNewJob").addEventListener("click", () => { $("#newJobDialog").showModal(); $("#jobCustomer").focus(); });
+document.querySelectorAll("[data-close]").forEach(button => button.addEventListener("click", () => button.closest("dialog").close()));
 
 $("#jobForm").addEventListener("submit", event => {
   event.preventDefault();
   const customer = $("#jobCustomer").value.trim();
   const title = $("#jobTitle").value.trim();
   if (!customer || !title) return;
+  const estimate = Number($("#jobEstimate").value) || 0;
   const settings = readSettings();
-  const jobNo = $("#jobNo").value.trim() || nextNumber(settings.prefixJob, allNumbers(jobs, "jobNo"));
-  jobs.push({ id: newId(), jobNo, customer, title, note: $("#jobNote").value.trim(), createdAt: Date.now(), quotation: {}, po: {}, delivery: {}, invoice: {}, payments: [] });
+  const job = { id: newId(), jobNo: nextNumber(settings.prefixJob, allNumbers(jobs, "jobNo")), customer, title, estimate, createdAt: Date.now(), quotation: {}, po: {}, delivery: {}, invoice: {}, payments: [] };
+  if (estimate > 0) {
+    job.quotation = { no: nextNumber(settings.prefixQuote, allNumbers(jobs, "quotation")), date: todayIso(), amount: estimate, status: "draft" };
+  }
+  jobs.push(job);
   writeJobs(jobs);
   event.target.reset();
+  $("#newJobDialog").close();
   renderAll();
+  toast(estimate > 0 ? "Kerja disimpan dan sebut harga disediakan." : "Kerja disimpan.");
+});
+
+/* Butang dalam empty state */
+document.addEventListener("click", event => {
+  const button = event.target.closest("[data-onboard]");
+  if (!button) return;
+  if (button.dataset.onboard === "new") { $("#newJobDialog").showModal(); $("#jobCustomer").focus(); return; }
+  const settings = readSettings();
+  const demo = [
+    { id: newId(), jobNo: "JOB-CONTOH-1", demo: true, customer: "ABC Sdn Bhd (contoh)", title: "Bekalan & pasang signage", createdAt: Date.now() - 3000,
+      quotation: { no: "QT-CONTOH-1", date: todayIso(), amount: 12000, status: "sent" }, po: { no: "PO-ABC-8891", date: todayIso(), amount: 12000 },
+      delivery: { no: "DO-CONTOH-1", date: todayIso(), status: "delivered", person: "En. Ridzuan" }, invoice: {}, payments: [] },
+    { id: newId(), jobNo: "JOB-CONTOH-2", demo: true, customer: "Maju Jaya Enterprise (contoh)", title: "Servis penyelenggaraan", createdAt: Date.now() - 2000,
+      quotation: { no: "QT-CONTOH-2", date: todayIso(), amount: 3500, status: "sent" }, po: {}, delivery: {}, invoice: {}, payments: [] }
+  ];
+  jobs.push(...demo);
+  writeJobs(jobs);
+  renderAll();
+  toast("Dua contoh kerja ditambah. Padam bila-bila dari dalam kerja itu.");
 });
 
 document.querySelectorAll("[data-filter]").forEach(button => button.addEventListener("click", () => {
