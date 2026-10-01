@@ -21,21 +21,11 @@ const DOC_META = {
   quotation: {
     eyebrow: "LANGKAH 1", title: "Sebut harga", prefix: "prefixQuote",
     statuses: [["draft", "Draf — belum hantar"], ["sent", "Sudah dihantar"], ["won", "Pelanggan setuju"], ["lost", "Pelanggan tolak"], ["expired", "Tempoh luput"]],
-    extraLabel: "Sah sehingga", showAmount: true, showExtra: true, showStatus: true, showPerson: false, showTerms: false
-  },
-  po: {
-    eyebrow: "LANGKAH 2", title: "PO pelanggan", prefix: "prefixPO",
-    statuses: [], extraLabel: "", showAmount: true, showExtra: false, showStatus: false, showPerson: false, showTerms: false,
-    help: "Nombor PO ini datang daripada pelanggan. Kalau mereka tak bagi PO rasmi, tulis apa-apa rujukan (contoh: WhatsApp 20 Sep)."
-  },
-  delivery: {
-    eyebrow: "LANGKAH 3", title: "Penghantaran", prefix: "prefixDO",
-    statuses: [["pending", "Belum hantar"], ["delivered", "Sudah dihantar"], ["acknowledged", "Pelanggan sahkan terima"]],
-    extraLabel: "", showAmount: false, showExtra: false, showStatus: true, showPerson: true, showTerms: false
+    showAmount: true, showExtra: true, showStatus: true, showTerms: false, showItems: true
   },
   invoice: {
-    eyebrow: "LANGKAH 4", title: "Invois", prefix: "prefixInvoice",
-    statuses: [], extraLabel: "", showAmount: true, showExtra: false, showStatus: false, showPerson: false, showTerms: true
+    eyebrow: "LANGKAH 2", title: "Invois", prefix: "prefixInvoice",
+    statuses: [], showAmount: true, showExtra: false, showStatus: false, showTerms: true, showItems: true
   }
 };
 
@@ -49,15 +39,16 @@ function docRows(key) {
   const doc = job[key] || {};
   const rows = [];
   if (doc.no) rows.push(["No", doc.no]);
-  if (doc.date) rows.push([key === "delivery" ? "Tarikh hantar" : "Tarikh", dateLabel(doc.date)]);
+  if (doc.date) rows.push(["Tarikh", dateLabel(doc.date)]);
   if (DOC_META[key].showAmount && doc.amount) rows.push(["Jumlah", money(doc.amount)]);
+  if (itemsOf(job).length) rows.push(["Item", `${itemsOf(job).length} baris`]);
   if (key === "quotation" && doc.validUntil) rows.push(["Sah sehingga", dateLabel(doc.validUntil)]);
   if (key === "invoice") {
     const due = dueDateOf(job);
     if (due) rows.push(["Jatuh tempo", `${dateLabel(due)}${doc.terms ? ` (${doc.terms} hari)` : ""}`]);
   }
   if (DOC_META[key].showStatus && doc.status) rows.push(["Status", statusLabel(key, doc.status)]);
-  if (key === "delivery" && doc.person) rows.push(["Diterima oleh", doc.person]);
+  if (key === "invoice") rows.push(["Status", doc.sent ? `Sudah dihantar${doc.sentAt ? ` · ${dateLabel(doc.sentAt)}` : ""}` : "Belum ditanda hantar"]);
   return rows;
 }
 
@@ -101,7 +92,7 @@ function renderPayments() {
   items.forEach(payment => {
     const row = document.createElement("article");
     row.className = "payment-row";
-    row.innerHTML = `<div><b></b><span></span></div><div class="row-end"><strong>${money(payment.amount)}</strong><button class="edit-button" type="button" data-payment="${payment.id}" aria-label="Edit bayaran">✎</button></div>`;
+    row.innerHTML = `<div><b></b><span></span></div><div class="row-end"><strong>${money(payment.amount)}</strong><a class="edit-button" href="doc.html?id=${encodeURIComponent(job.id)}&jenis=receipt&bayaran=${payment.id}" aria-label="Cetak resit">🖨</a><button class="edit-button" type="button" data-payment="${payment.id}" aria-label="Edit bayaran">✎</button></div>`;
     row.querySelector("b").textContent = `${dateLabel(payment.date)} · ${payment.method || "—"}`;
     row.querySelector("span").textContent = [payment.receiptNo, payment.ref].filter(Boolean).join(" · ") || "Tiada rujukan";
     list.append(row);
@@ -116,16 +107,27 @@ function render() {
   $("#jobValueLabel").textContent = money(jobValue(job));
   $("#jobPaidLabel").textContent = money(paidTotal(job));
   $("#jobBalanceLabel").textContent = money(balanceOf(job));
-  $("#jobStageLabel").textContent = stageOf(job).label;
+  $("#jobDateLabel").textContent = jobDate(job) ? dateLabel(jobDate(job)) : "—";
   $("#jobDueLabel").textContent = hasDoc(job, "invoice") ? dateLabel(dueDateOf(job)) : "—";
 
   renderNext();
+  renderPrintButtons();
   renderDoc("quotation", "#docQuotation");
-  renderDoc("po", "#docPo");
-  renderDoc("delivery", "#docDelivery");
   renderDoc("invoice", "#docInvoice");
   renderPayments();
 }
+
+function markInvoiceSent() {
+  const message = applyInstant(job, jobs, "invoice-sent");
+  saveAll(); toast(message);
+}
+
+function renderPrintButtons() {
+  $("#printQuote").hidden = !hasDoc(job, "quotation");
+  $("#printInvoice").hidden = !hasDoc(job, "invoice");
+}
+$("#printQuote").addEventListener("click", () => { location.href = `doc.html?id=${encodeURIComponent(job.id)}&jenis=quotation`; });
+$("#printInvoice").addEventListener("click", () => { location.href = `doc.html?id=${encodeURIComponent(job.id)}&jenis=invoice`; });
 
 function renderNext() {
   const card = $("#nextCard");
@@ -144,11 +146,17 @@ function renderNext() {
   cta.hidden = false; cta.textContent = action.cta;
   cta.dataset.instant = action.instant || ""; cta.dataset.open = action.open || "";
   const secondary = $("#nextSecondary");
-  if (action.secondary) { secondary.hidden = false; secondary.textContent = action.secondary.cta; secondary.dataset.instant = action.secondary.instant; }
+  if (action.secondary) {
+    secondary.hidden = false; secondary.textContent = action.secondary.cta;
+    secondary.dataset.instant = action.secondary.instant || "";
+    secondary.dataset.open = action.secondary.open || "";
+    secondary.dataset.print = action.secondary.print || "";
+  }
   else secondary.hidden = true;
 }
 
 function runNext(button) {
+  if (button.dataset.print) { location.href = `doc.html?id=${encodeURIComponent(job.id)}&jenis=${button.dataset.print}`; return; }
   if (button.dataset.instant) { const message = applyInstant(job, jobs, button.dataset.instant); saveAll(); toast(message); return; }
   if (button.dataset.open === "payment") return openPayment(null);
   if (button.dataset.open) return openDoc(button.dataset.open);
@@ -156,11 +164,51 @@ function runNext(button) {
 $("#nextCta").addEventListener("click", () => runNext($("#nextCta")));
 $("#nextSecondary").addEventListener("click", () => runNext($("#nextSecondary")));
 
+/* ---------- Editor senarai item ---------- */
+let draftItems = [];
+function renderItemsEditor() {
+  const box = $("#itemRowsEdit");
+  box.innerHTML = "";
+  draftItems.forEach((item, index) => {
+    const row = document.createElement("div");
+    row.className = "item-row";
+    row.innerHTML = `<input type="text" placeholder="Perihal kerja atau barang" maxlength="90" data-field="description" data-index="${index}" />
+      <input type="number" min="0" step="0.01" inputmode="decimal" placeholder="Kuantiti" data-field="qty" data-index="${index}" />
+      <input type="number" min="0" step="0.01" inputmode="decimal" placeholder="Harga" data-field="price" data-index="${index}" />
+      <button type="button" class="delete-button" data-remove="${index}" aria-label="Buang baris">×</button>`;
+    row.querySelector('[data-field="description"]').value = item.description || "";
+    row.querySelector('[data-field="qty"]').value = item.qty ?? 1;
+    row.querySelector('[data-field="price"]').value = item.price ?? "";
+    box.append(row);
+  });
+  const total = draftItems.reduce((sum, item) => sum + lineTotal(item), 0);
+  $("#itemsTotalLabel").textContent = money(total);
+  if (draftItems.length) $("#docAmount").value = total.toFixed(2);
+}
+$("#addItem").addEventListener("click", () => { draftItems.push({ description: "", qty: 1, price: "" }); renderItemsEditor(); });
+$("#itemRowsEdit").addEventListener("input", event => {
+  const field = event.target.dataset.field;
+  if (!field) return;
+  draftItems[Number(event.target.dataset.index)][field] = field === "description" ? event.target.value : Number(event.target.value);
+  const total = draftItems.reduce((sum, item) => sum + lineTotal(item), 0);
+  $("#itemsTotalLabel").textContent = money(total);
+  $("#docAmount").value = total.toFixed(2);
+});
+$("#itemRowsEdit").addEventListener("click", event => {
+  const button = event.target.closest("[data-remove]");
+  if (!button) return;
+  draftItems.splice(Number(button.dataset.remove), 1);
+  renderItemsEditor();
+});
+
 /* ---------- Edit maklumat job ---------- */
 $("#editJob").addEventListener("click", () => {
   $("#editCustomer").value = job.customer || "";
   $("#editJobNo").value = job.jobNo || "";
   $("#editTitle").value = job.title || "";
+  $("#editDate").value = jobDate(job) || "";
+  $("#editCustomerAddress").value = job.customerAddress || "";
+  $("#editCustomerContact").value = job.customerContact || "";
   $("#editNote").value = job.note || "";
   $("#jobDialog").showModal();
 });
@@ -169,6 +217,9 @@ $("#jobEditForm").addEventListener("submit", event => {
   job.customer = $("#editCustomer").value.trim();
   job.jobNo = $("#editJobNo").value.trim();
   job.title = $("#editTitle").value.trim();
+  job.date = $("#editDate").value;
+  job.customerAddress = $("#editCustomerAddress").value.trim();
+  job.customerContact = $("#editCustomerContact").value.trim();
   job.note = $("#editNote").value.trim();
   $("#jobDialog").close();
   saveAll();
@@ -191,14 +242,16 @@ function openDoc(key) {
   $("#docDate").value = doc.date || todayIso();
   $("#docAmount").value = doc.amount || suggestedAmount(job, key) || "";
   $("#docExtraDate").value = doc.validUntil || "";
-  $("#docPerson").value = doc.person || "";
   $("#docTerms").value = doc.terms ?? settings.terms;
   $("#docDueDate").value = doc.dueDate || "";
   $("#docLink").value = doc.link || "";
 
+  draftItems = itemsOf(job).map(item => ({ ...item }));
+  if (!draftItems.length && !hasDoc(job, key)) draftItems = [{ description: job.title || "", qty: 1, price: suggestedAmount(job, key) || "" }];
+  renderItemsEditor();
   $("#docAmountField").hidden = !meta.showAmount;
   $("#docExtraField").hidden = !meta.showExtra;
-  $("#docPersonField").hidden = !meta.showPerson;
+
   $("#docTermsRow").hidden = !meta.showTerms;
   $("#docStatusField").hidden = !meta.showStatus;
   if (meta.showStatus) {
@@ -222,11 +275,12 @@ $("#docForm").addEventListener("submit", event => {
   if (meta.showAmount) doc.amount = Number($("#docAmount").value) || 0;
   if (meta.showExtra) doc.validUntil = $("#docExtraDate").value;
   if (meta.showStatus) doc.status = $("#docStatus").value;
-  if (meta.showPerson) doc.person = $("#docPerson").value.trim();
   if (meta.showTerms) {
     doc.terms = Number($("#docTerms").value) || 0;
     doc.dueDate = $("#docDueDate").value;
   }
+  const cleanItems = draftItems.filter(item => (item.description || "").trim() || Number(item.price) > 0);
+  if (cleanItems.length) { job.items = cleanItems; doc.amount = cleanItems.reduce((sum, item) => sum + lineTotal(item), 0); }
   job[key] = doc;
   if (key === "invoice" && doc.date && !doc.dueDate) job.invoice.dueDate = dueDateOf(job);
   $("#docDialog").close();

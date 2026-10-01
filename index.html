@@ -4,12 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0f3460" />
-    <meta name="description" content="Jejak sebut harga, PO, penghantaran, invois dan bayaran pelanggan." />
+    <meta name="description" content="Rekod sebut harga, invois dan bayaran pelanggan — dengan dokumen boleh cetak." />
     <link rel="manifest" href="manifest.json" />
-    <link rel="icon" href="favicon.ico?v=2" sizes="any" />
-    <link rel="icon" href="icon.svg?v=2" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2" />
-    <link rel="stylesheet" href="styles.css?v=2" />
+    <link rel="icon" href="favicon.ico?v=4" sizes="any" />
+    <link rel="icon" href="icon.svg?v=4" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=4" />
+    <link rel="stylesheet" href="styles.css?v=4" />
     <title>Bisnes Tracker</title>
   </head>
   <body>
@@ -59,8 +59,15 @@
       <div class="dialog-heading"><div><p class="eyebrow">KERJA BAHARU</p><h2>Tambah kerja</h2></div><button class="icon-button close-button" type="button" data-close aria-label="Tutup">×</button></div>
       <label>Nama pelanggan<input id="jobCustomer" required maxlength="80" placeholder="Contoh: ABC Sdn Bhd" list="customerList" /></label>
       <label>Kerja apa?<input id="jobTitle" required maxlength="80" placeholder="Contoh: Bekalan &amp; pasang signage" /></label>
-      <label>Harga yang kau beri (RM)<input id="jobEstimate" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Boleh isi kemudian" /></label>
-      <p class="form-help">Kalau kau isi harga, app terus sediakan sebut harga untuk kau — tak perlu taip dua kali.</p>
+      <label>Tarikh kerja<input id="jobDate" type="date" required /></label>
+      <label>Harga (RM)<input id="jobEstimate" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Boleh isi kemudian" /></label>
+      <label>Mula dengan
+        <select id="jobStart">
+          <option value="quotation">Sebut harga dulu</option>
+          <option value="invoice">Terus invois — pelanggan dah minta</option>
+        </select>
+      </label>
+      <p class="form-help">Pilih "Terus invois" kalau pelanggan terus minta invois tanpa sebut harga. App akan terus tanda invois sudah dihantar dan kira tarikh jatuh tempo.</p>
       <button class="save-button" type="submit">Simpan &amp; teruskan</button>
       <datalist id="customerList"></datalist>
     </form></dialog>
@@ -68,23 +75,21 @@
     <template id="emptyJobTemplate">
       <div class="onboard">
         <h3>Belum ada kerja direkod</h3>
-        <p>Sistem ni jejak satu kerja dari mula sampai duit masuk. Lima langkah sahaja:</p>
+        <p>Sistem ni jejak satu kerja dari mula sampai duit masuk. Tiga langkah sahaja:</p>
         <ol class="onboard-steps">
           <li><b>Sebut harga</b> — harga yang kau beri kepada pelanggan</li>
-          <li><b>PO pelanggan</b> — pengesahan mereka setuju</li>
-          <li><b>Penghantaran</b> — barang dihantar atau kerja siap</li>
-          <li><b>Invois</b> — kau tuntut bayaran</li>
+          <li><b>Invois</b> — kau tuntut bayaran (boleh terus ke sini kalau pelanggan minta)</li>
           <li><b>Bayaran</b> — duit masuk, selesai</li>
         </ol>
-        <p>App akan bagitahu kau langkah seterusnya setiap kali, dan bawa jumlah RM dari langkah sebelumnya supaya kau tak taip berulang.</p>
+        <p>App bagitahu langkah seterusnya setiap kali, dan kau boleh cetak sebut harga, invois dan resit terus dari sini untuk dihantar kepada pelanggan.</p>
         <div class="onboard-actions">
           <button type="button" class="save-button" data-onboard="new">+ Mula kerja pertama</button>
           <button type="button" class="save-button ghost" data-onboard="demo">Isi contoh dulu</button>
         </div>
       </div>
     </template>
-    <script src="biz.js?v=2"></script>
-    <script src="app.js?v=2"></script>
-    <script type="module" src="cloud.js?v=2"></script>
+    <script src="biz.js?v=4"></script>
+    <script src="app.js?v=4"></script>
+    <script type="module" src="cloud.js?v=4"></script>
   </body>
 </html>

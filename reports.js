@@ -59,10 +59,10 @@ function rangeLabel() {
 function note(message) { $("#exportStatus").textContent = message; }
 
 $("#exportSales").addEventListener("click", () => {
-  const rows = [["Tarikh invois", "No invois", "No job", "Pelanggan", "Perihal", "No PO pelanggan", "Jumlah (RM)", "Tarikh jatuh tempo", "Dibayar (RM)", "Baki (RM)"]];
+  const rows = [["Tarikh invois", "No invois", "No rujukan", "Pelanggan", "Perihal", "Tarikh kerja", "Invois dihantar", "Jumlah (RM)", "Tarikh jatuh tempo", "Dibayar (RM)", "Baki (RM)"]];
   jobs.filter(job => hasDoc(job, "invoice") && inRange(job.invoice.date))
     .sort((a, b) => (a.invoice.date || "").localeCompare(b.invoice.date || ""))
-    .forEach(job => rows.push([job.invoice.date, job.invoice.no || "", job.jobNo || "", job.customer || "", job.title || "", (job.po || {}).no || "", invoiced(job).toFixed(2), dueDateOf(job), paidTotal(job).toFixed(2), balanceOf(job).toFixed(2)]));
+    .forEach(job => rows.push([job.invoice.date, job.invoice.no || "", job.jobNo || "", job.customer || "", job.title || "", jobDate(job), job.invoice.sent ? "Ya" : "Belum", invoiced(job).toFixed(2), dueDateOf(job), paidTotal(job).toFixed(2), balanceOf(job).toFixed(2)]));
   if (rows.length === 1) return note("Tiada invois dalam julat tarikh itu.");
   downloadCsv(`sales-register_${rangeLabel()}.csv`, rows);
   note(`${rows.length - 1} invois dieksport.`);
@@ -90,13 +90,11 @@ $("#exportAged").addEventListener("click", () => {
 });
 
 $("#exportAll").addEventListener("click", () => {
-  const rows = [["No job", "Pelanggan", "Tajuk", "Peringkat", "No quotation", "Tarikh quotation", "Jumlah quotation", "Status quotation", "No PO", "Tarikh PO", "Jumlah PO", "No DO", "Tarikh DO", "Status DO", "Diterima oleh", "No invois", "Tarikh invois", "Jumlah invois", "Jatuh tempo", "Dibayar", "Baki", "Lewat (hari)"]];
+  const rows = [["No rujukan", "Pelanggan", "Kerja", "Tarikh kerja", "Peringkat", "No sebut harga", "Tarikh sebut harga", "Jumlah sebut harga", "Status", "No invois", "Tarikh invois", "Jumlah invois", "Jatuh tempo", "Dibayar", "Baki", "Lewat (hari)"]];
   jobs.forEach(job => {
-    const quote = job.quotation || {}, po = job.po || {}, delivery = job.delivery || {}, invoice = job.invoice || {};
-    rows.push([job.jobNo || "", job.customer || "", job.title || "", stageOf(job).label,
+    const quote = job.quotation || {}, invoice = job.invoice || {};
+    rows.push([job.jobNo || "", job.customer || "", job.title || "", jobDate(job), stageOf(job).label,
       quote.no || "", quote.date || "", quote.amount ? Number(quote.amount).toFixed(2) : "", quote.status || "",
-      po.no || "", po.date || "", po.amount ? Number(po.amount).toFixed(2) : "",
-      delivery.no || "", delivery.date || "", delivery.status || "", delivery.person || "",
       invoice.no || "", invoice.date || "", invoice.amount ? Number(invoice.amount).toFixed(2) : "", hasDoc(job, "invoice") ? dueDateOf(job) : "",
       paidTotal(job).toFixed(2), balanceOf(job).toFixed(2), overdueDays(job) || ""]);
   });
@@ -106,12 +104,23 @@ $("#exportAll").addEventListener("click", () => {
 });
 
 /* ---------- Tetapan ---------- */
+const COMPANY_FIELDS = ["company", "ssm", "phone", "email", "address", "bankName", "bankAccount", "note"];
+function loadCompany() {
+  const settings = readSettings();
+  COMPANY_FIELDS.forEach(field => { $(`#${field}`).value = settings[field] || ""; });
+}
+$("#companyForm").addEventListener("submit", event => {
+  event.preventDefault();
+  const settings = readSettings();
+  COMPANY_FIELDS.forEach(field => { settings[field] = $(`#${field}`).value.trim(); });
+  writeSettings(settings);
+  $("#companyStatus").textContent = "Maklumat syarikat disimpan. Ia akan muncul pada dokumen yang kau cetak.";
+});
+
 function loadSettings() {
   const settings = readSettings();
   $("#prefixJob").value = settings.prefixJob;
   $("#prefixQuote").value = settings.prefixQuote;
-  $("#prefixPO").value = settings.prefixPO;
-  $("#prefixDO").value = settings.prefixDO;
   $("#prefixInvoice").value = settings.prefixInvoice;
   $("#prefixReceipt").value = settings.prefixReceipt;
   $("#defaultTerms").value = settings.terms;
@@ -119,10 +128,9 @@ function loadSettings() {
 $("#settingsForm").addEventListener("submit", event => {
   event.preventDefault();
   writeSettings({
+    ...readSettings(),
     prefixJob: $("#prefixJob").value.trim().toUpperCase() || "JOB",
     prefixQuote: $("#prefixQuote").value.trim().toUpperCase() || "QT",
-    prefixPO: $("#prefixPO").value.trim().toUpperCase() || "PO",
-    prefixDO: $("#prefixDO").value.trim().toUpperCase() || "DO",
     prefixInvoice: $("#prefixInvoice").value.trim().toUpperCase() || "INV",
     prefixReceipt: $("#prefixReceipt").value.trim().toUpperCase() || "RCP",
     terms: Number($("#defaultTerms").value) || 30
@@ -131,7 +139,7 @@ $("#settingsForm").addEventListener("submit", event => {
   $("#settingsStatus").textContent = "Tetapan disimpan.";
 });
 
-function renderAll() { jobs = readJobs(); renderAged(); loadSettings(); }
+function renderAll() { jobs = readJobs(); renderAged(); loadSettings(); loadCompany(); }
 document.addEventListener("ft-cloud-data", renderAll);
 if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("service-worker.js"));
 

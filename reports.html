@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0f3460" />
     <link rel="manifest" href="manifest.json" />
-    <link rel="icon" href="favicon.ico?v=2" sizes="any" />
-    <link rel="icon" href="icon.svg?v=2" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2" />
-    <link rel="stylesheet" href="styles.css?v=2" />
+    <link rel="icon" href="favicon.ico?v=4" sizes="any" />
+    <link rel="icon" href="icon.svg?v=4" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=4" />
+    <link rel="stylesheet" href="styles.css?v=4" />
     <title>Laporan · Bisnes Tracker</title>
   </head>
   <body>
@@ -44,12 +44,26 @@
         <p id="exportStatus" class="form-help"></p>
       </section>
 
+      <section class="list-section" aria-labelledby="companyTitle">
+        <div class="section-heading"><div><p class="eyebrow">UNTUK DOKUMEN</p><h2 id="companyTitle">Maklumat syarikat</h2></div></div>
+        <p class="form-help">Maklumat ini muncul pada sebut harga, invois dan resit yang kau cetak. Isi sekali sahaja.</p>
+        <form id="companyForm" class="stack-form">
+          <label>Nama syarikat<input id="company" maxlength="80" placeholder="Contoh: Sunaini Enterprise" /></label>
+          <div class="two-columns"><label>No. pendaftaran (SSM)<input id="ssm" maxlength="40" /></label><label>Telefon<input id="phone" maxlength="40" /></label></div>
+          <label>Emel<input id="email" type="email" maxlength="80" /></label>
+          <label>Alamat<textarea id="address" rows="2" maxlength="200"></textarea></label>
+          <div class="two-columns"><label>Nama bank &amp; pemegang akaun<input id="bankName" maxlength="80" placeholder="Maybank — Sunaini Enterprise" /></label><label>No akaun<input id="bankAccount" maxlength="40" /></label></div>
+          <label>Nota kaki dokumen<input id="note" maxlength="120" placeholder="Contoh: Terima kasih atas urusan anda." /></label>
+          <button class="save-button" type="submit">Simpan maklumat syarikat</button>
+        </form>
+        <p id="companyStatus" class="form-help"></p>
+      </section>
+
       <section class="list-section" aria-labelledby="settingsTitle">
         <div class="section-heading"><div><p class="eyebrow">TETAPAN</p><h2 id="settingsTitle">Penomboran dokumen</h2></div></div>
         <p class="form-help">Nombor seterusnya dijana automatik ikut format PREFIX-TAHUN-001. Kau masih boleh tulis nombor sendiri bila mengisi dokumen.</p>
         <form id="settingsForm" class="stack-form">
           <div class="two-columns"><label>Prefix job<input id="prefixJob" maxlength="8" /></label><label>Prefix quotation<input id="prefixQuote" maxlength="8" /></label></div>
-          <div class="two-columns"><label>Prefix PO<input id="prefixPO" maxlength="8" /></label><label>Prefix DO<input id="prefixDO" maxlength="8" /></label></div>
           <div class="two-columns"><label>Prefix invois<input id="prefixInvoice" maxlength="8" /></label><label>Prefix resit<input id="prefixReceipt" maxlength="8" /></label></div>
           <label>Tempoh kredit lalai (hari)<input id="defaultTerms" type="number" min="0" max="365" step="1" inputmode="numeric" /></label>
           <button class="save-button" type="submit">Simpan tetapan</button>
@@ -57,8 +71,8 @@
         <p id="settingsStatus" class="form-help"></p>
       </section>
     </main>
-    <script src="biz.js?v=2"></script>
-    <script src="reports.js?v=2"></script>
-    <script type="module" src="cloud.js?v=2"></script>
+    <script src="biz.js?v=4"></script>
+    <script src="reports.js?v=4"></script>
+    <script type="module" src="cloud.js?v=4"></script>
   </body>
 </html>

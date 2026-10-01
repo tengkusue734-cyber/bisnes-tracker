@@ -211,3 +211,62 @@ input, select, textarea { width:100%; border:1px solid var(--line); border-radiu
 .chain-wrap[open] .chain { border:1px solid var(--line); border-top:0; border-radius:0 0 13px 13px; padding:13px; }
 
 .toast { position:fixed; left:50%; bottom:22px; transform:translateX(-50%); z-index:50; max-width:calc(100% - 32px); background:#0a2647; color:white; padding:12px 18px; border-radius:11px; font-size:.8rem; font-weight:700; box-shadow:0 8px 24px #0a264744; }
+
+/* ---------- V3: editor item ---------- */
+.items-edit { display:grid; gap:7px; margin:8px 0 10px; }
+.item-row { display:grid; grid-template-columns:1fr 62px 84px 30px; gap:6px; align-items:center; }
+.item-row input { padding:9px; font-size:.8rem; }
+.item-row input[type="number"] { text-align:right; }
+.item-row .delete-button { border:0; background:transparent; color:#94a3b8; font-size:1.1rem; padding:4px; }
+.items-total { text-align:right; color:var(--muted); font-size:.78rem; margin-top:4px; }
+.items-total b { color:var(--ink); font-size:.92rem; }
+#itemsBlock .doc-label { color:var(--muted); font-size:.72rem; font-weight:800; letter-spacing:.04em; text-transform:uppercase; }
+.hero-actions { display:flex; flex-wrap:wrap; gap:8px; }
+
+/* ---------- Dokumen boleh cetak ---------- */
+.doc-body { background:#eef2f7; padding:0 0 40px; }
+.doc-toolbar { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:14px 18px; background:var(--white); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:5; }
+.toolbar-back { color:var(--navy); text-decoration:none; font-size:.82rem; font-weight:800; }
+.doc-tip { width:min(100%, 820px); margin:14px auto 0; padding:0 18px; color:var(--muted); font-size:.76rem; line-height:1.55; }
+.sheet-doc { width:min(100%, 820px); margin:16px auto; background:var(--white); padding:42px 44px; border-radius:6px; box-shadow:0 6px 28px #0a264718; color:#1a2230; }
+.doc-top { display:flex; justify-content:space-between; gap:24px; align-items:flex-start; border-bottom:2px solid var(--navy); padding-bottom:18px; }
+.doc-company h1 { font-size:1.22rem; letter-spacing:-.02em; }
+.doc-muted { color:#64748b; font-size:.78rem; line-height:1.55; white-space:pre-line; }
+.doc-title { text-align:right; }
+.doc-title h2 { font-size:1.5rem; letter-spacing:.04em; color:var(--navy); }
+.doc-no { margin-top:4px; font-size:.86rem; font-weight:800; }
+.doc-meta { display:flex; justify-content:space-between; gap:28px; margin:22px 0 20px; }
+.doc-label { color:#64748b; font-size:.68rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; margin-bottom:5px; }
+.doc-strong { font-size:.95rem; font-weight:800; }
+.doc-dates { display:grid; gap:5px; margin:0; text-align:right; min-width:200px; }
+.doc-dates > div { display:flex; justify-content:flex-end; gap:14px; }
+.doc-dates dt { color:#64748b; font-size:.76rem; }
+.doc-dates dd { margin:0; font-size:.78rem; font-weight:700; min-width:108px; }
+.doc-table { width:100%; border-collapse:collapse; margin-top:6px; font-size:.82rem; }
+.doc-table thead th { background:#f1f5f9; color:#475569; font-size:.68rem; letter-spacing:.06em; text-transform:uppercase; padding:9px 10px; text-align:left; }
+.doc-table th.c-num, .doc-table td.c-num { text-align:right; }
+.doc-table th.c-no, .doc-table td.c-no { width:34px; text-align:center; color:#94a3b8; }
+.doc-table tbody td { padding:11px 10px; border-bottom:1px solid #e2e8f0; vertical-align:top; }
+.doc-table tfoot td { padding:8px 10px; text-align:right; color:#475569; font-size:.8rem; }
+.doc-table tfoot tr.grand td { font-size:.95rem; font-weight:850; color:#0f172a; border-top:2px solid var(--navy); padding-top:11px; }
+.doc-bottom { display:flex; justify-content:space-between; gap:30px; margin-top:32px; }
+.doc-bank { max-width:58%; }
+.doc-sign { text-align:center; min-width:190px; }
+.sign-line { border-bottom:1px solid #94a3b8; margin:38px 0 7px; }
+.doc-note { margin-top:26px; padding-top:14px; border-top:1px solid #e2e8f0; color:#64748b; font-size:.76rem; }
+
+@media print {
+  .no-print { display:none !important; }
+  .doc-body { background:white; padding:0; }
+  .sheet-doc { width:auto; margin:0; padding:0; box-shadow:none; border-radius:0; }
+  @page { size:A4; margin:16mm; }
+}
+@media (max-width:620px) {
+  .sheet-doc { padding:24px 20px; }
+  .doc-top, .doc-meta, .doc-bottom { flex-direction:column; }
+  .doc-title, .doc-dates { text-align:left; }
+  .doc-dates > div { justify-content:flex-start; }
+  .doc-bank { max-width:100%; }
+  .doc-sign { text-align:left; min-width:0; }
+}
+.job-date { color:var(--muted); font-size:.68rem; margin-top:3px; }

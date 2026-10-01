@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ms">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0f3460" />
+    <link rel="icon" href="favicon.ico?v=4" sizes="any" />
+    <link rel="stylesheet" href="styles.css?v=4" />
+    <title>Dokumen · Bisnes Tracker</title>
+  </head>
+  <body class="doc-body">
+    <div class="doc-toolbar no-print">
+      <a class="toolbar-back" href="index.html" id="backLink">← Kembali</a>
+      <div class="toolbar-actions">
+        <button type="button" class="save-button" id="printButton">Cetak / Simpan PDF</button>
+      </div>
+    </div>
+    <p class="doc-tip no-print">Dalam tetingkap cetak, pilih <b>Save as PDF</b> sebagai printer untuk dapatkan fail PDF yang boleh dihantar kepada pelanggan melalui WhatsApp atau emel.</p>
+
+    <article class="sheet-doc" id="sheet">
+      <header class="doc-top">
+        <div class="doc-company">
+          <h1 id="companyName">Nama Syarikat</h1>
+          <p id="companySsm" class="doc-muted"></p>
+          <p id="companyAddress" class="doc-muted"></p>
+          <p id="companyContact" class="doc-muted"></p>
+        </div>
+        <div class="doc-title">
+          <h2 id="docKind">INVOIS</h2>
+          <p class="doc-no" id="docNumber">—</p>
+        </div>
+      </header>
+
+      <section class="doc-meta">
+        <div>
+          <p class="doc-label">Kepada</p>
+          <p class="doc-strong" id="billName">—</p>
+          <p class="doc-muted" id="billDetails"></p>
+        </div>
+        <dl class="doc-dates" id="docDates"></dl>
+      </section>
+
+      <table class="doc-table">
+        <thead><tr><th class="c-no">#</th><th>Perihal</th><th class="c-num">Kuantiti</th><th class="c-num">Harga (RM)</th><th class="c-num">Jumlah (RM)</th></tr></thead>
+        <tbody id="itemRows"></tbody>
+        <tfoot id="docFoot"></tfoot>
+      </table>
+
+      <section class="doc-bottom">
+        <div class="doc-bank" id="bankBox"></div>
+        <div class="doc-sign">
+          <p class="doc-label">Disahkan oleh</p>
+          <div class="sign-line"></div>
+          <p class="doc-muted" id="signName"></p>
+        </div>
+      </section>
+
+      <p class="doc-note" id="docNote"></p>
+    </article>
+
+    <script src="biz.js?v=4"></script>
+    <script src="doc.js?v=4"></script>
+  </body>
+</html>

@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0f3460" />
     <link rel="manifest" href="manifest.json" />
-    <link rel="icon" href="favicon.ico?v=2" sizes="any" />
-    <link rel="icon" href="icon.svg?v=2" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2" />
-    <link rel="stylesheet" href="styles.css?v=2" />
+    <link rel="icon" href="favicon.ico?v=4" sizes="any" />
+    <link rel="icon" href="icon.svg?v=4" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=4" />
+    <link rel="stylesheet" href="styles.css?v=4" />
     <title>Butiran Kerja · Bisnes Tracker</title>
   </head>
   <body>
@@ -24,11 +24,13 @@
         <div class="hero-breakdown">
           <span><small>Sudah dibayar</small><b id="jobPaidLabel">RM0.00</b></span>
           <span><small>Baki</small><b id="jobBalanceLabel">RM0.00</b></span>
-          <span><small>Kedudukan</small><b id="jobStageLabel">—</b></span>
+          <span><small>Tarikh kerja</small><b id="jobDateLabel">—</b></span>
           <span><small>Tempoh bayaran</small><b id="jobDueLabel">—</b></span>
         </div>
         <div class="hero-actions">
-          <button type="button" id="editJob">Edit nama &amp; tajuk</button>
+          <button type="button" id="editJob">Edit maklumat</button>
+          <button type="button" id="printQuote" hidden>Cetak sebut harga</button>
+          <button type="button" id="printInvoice" hidden>Cetak invois</button>
         </div>
       </section>
 
@@ -48,16 +50,8 @@
           <div class="doc-head"><div><span class="doc-step">1</span><h2>Sebut harga</h2></div><button type="button" class="doc-button" data-open="quotation">Isi</button></div>
           <div class="doc-body" id="docQuotation"></div>
         </article>
-        <article class="doc-card" data-doc="po">
-          <div class="doc-head"><div><span class="doc-step">2</span><h2>PO pelanggan</h2></div><button type="button" class="doc-button" data-open="po">Isi</button></div>
-          <div class="doc-body" id="docPo"></div>
-        </article>
-        <article class="doc-card" data-doc="delivery">
-          <div class="doc-head"><div><span class="doc-step">3</span><h2>Penghantaran (DO)</h2></div><button type="button" class="doc-button" data-open="delivery">Isi</button></div>
-          <div class="doc-body" id="docDelivery"></div>
-        </article>
         <article class="doc-card" data-doc="invoice">
-          <div class="doc-head"><div><span class="doc-step">4</span><h2>Invois</h2></div><button type="button" class="doc-button" data-open="invoice">Isi</button></div>
+          <div class="doc-head"><div><span class="doc-step">2</span><h2>Invois</h2></div><button type="button" class="doc-button" data-open="invoice">Isi</button></div>
           <div class="doc-body" id="docInvoice"></div>
         </article>
       </section>
@@ -65,7 +59,7 @@
 
       <section class="list-section payments-section" aria-labelledby="paymentTitle">
         <div class="section-heading">
-          <div><p class="eyebrow">5 · BAYARAN</p><h2 id="paymentTitle">Bayaran masuk</h2></div>
+          <div><p class="eyebrow">LANGKAH 3 · BAYARAN</p><h2 id="paymentTitle">Bayaran masuk</h2></div>
           <span class="count" id="paymentCount">0 bayaran</span>
         </div>
         <div id="paymentList" class="payment-list" aria-live="polite"></div>
@@ -81,7 +75,10 @@
       <div class="dialog-heading"><div><p class="eyebrow">KEMAS KINI</p><h2>Maklumat kerja</h2></div><button class="icon-button close-button" type="button" data-close aria-label="Tutup">×</button></div>
       <div class="two-columns"><label>Pelanggan<input id="editCustomer" required maxlength="80" /></label><label>No rujukan<input id="editJobNo" maxlength="30" /></label></div>
       <label>Tajuk kerja<input id="editTitle" required maxlength="80" /></label>
-      <label>Nota<input id="editNote" maxlength="100" /></label>
+      <label>Tarikh kerja<input id="editDate" type="date" /></label>
+      <label>Alamat pelanggan (untuk dokumen)<textarea id="editCustomerAddress" rows="2" maxlength="160" placeholder="Contoh: No 12, Jalan Perdana, 20000 Kuala Terengganu"></textarea></label>
+      <label>Emel / telefon pelanggan<input id="editCustomerContact" maxlength="80" /></label>
+      <label>Nota dalaman<input id="editNote" maxlength="100" /></label>
       <button class="save-button" type="submit">Simpan</button>
     </form></dialog>
 
@@ -91,12 +88,17 @@
         <label>No dokumen<input id="docNo" maxlength="40" /></label>
         <label>Tarikh<input id="docDate" type="date" /></label>
       </div>
+      <div id="itemsBlock">
+        <p class="doc-label">Senarai item</p>
+        <div id="itemRowsEdit" class="items-edit"></div>
+        <button type="button" class="save-button ghost" id="addItem">+ Tambah baris</button>
+        <p class="items-total">Jumlah: <b id="itemsTotalLabel">RM0.00</b></p>
+      </div>
       <div class="two-columns">
         <label id="docAmountField">Jumlah (RM)<input id="docAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" /></label>
         <label id="docExtraField">Sah sehingga<input id="docExtraDate" type="date" /></label>
       </div>
       <label id="docStatusField">Status<select id="docStatus"></select></label>
-      <label id="docPersonField">Diterima oleh<input id="docPerson" maxlength="60" placeholder="Nama penerima" /></label>
       <div class="two-columns" id="docTermsRow">
         <label>Tempoh kredit (hari)<input id="docTerms" type="number" min="0" max="365" step="1" inputmode="numeric" placeholder="30" /></label>
         <label>Tarikh jatuh tempo<input id="docDueDate" type="date" /></label>
@@ -124,8 +126,8 @@
     </form></dialog>
 
     <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
-    <script src="biz.js?v=2"></script>
-    <script src="job.js?v=2"></script>
-    <script type="module" src="cloud.js?v=2"></script>
+    <script src="biz.js?v=4"></script>
+    <script src="job.js?v=4"></script>
+    <script type="module" src="cloud.js?v=4"></script>
   </body>
 </html>

@@ -4,7 +4,11 @@ const SETTINGS_KEY = "biz-tracker-settings-v1";
 const $ = selector => document.querySelector(selector);
 const todayIso = () => new Date().toISOString().slice(0, 10);
 
-const defaultSettings = { prefixJob: "JOB", prefixQuote: "QT", prefixPO: "PO", prefixDO: "DO", prefixInvoice: "INV", prefixReceipt: "RCP", terms: 30 };
+const defaultSettings = {
+  prefixJob: "JOB", prefixQuote: "QT", prefixInvoice: "INV", prefixReceipt: "RCP", terms: 30,
+  company: "", ssm: "", address: "", phone: "", email: "",
+  bankName: "", bankAccount: "", note: "Terima kasih atas urusan anda."
+};
 
 function readJobs() { try { return JSON.parse(localStorage.getItem(JOBS_KEY)) || []; } catch { return []; } }
 function writeJobs(list) { localStorage.setItem(JOBS_KEY, JSON.stringify(list)); }
@@ -33,14 +37,18 @@ function allNumbers(jobs, field) {
   return jobs.map(job => (job[field] || {}).no).filter(Boolean);
 }
 
+/* ---------- Item baris ---------- */
+function itemsOf(job) { return Array.isArray(job.items) ? job.items : []; }
+function lineTotal(item) { return (Number(item.qty) || 0) * (Number(item.price) || 0); }
+function itemsTotal(job) { return itemsOf(job).reduce((sum, item) => sum + lineTotal(item), 0); }
+
 /* ---------- Pengiraan job ---------- */
 function paymentsOf(job) { return Array.isArray(job.payments) ? job.payments : []; }
 function paidTotal(job) { return paymentsOf(job).reduce((sum, item) => sum + (Number(item.amount) || 0), 0); }
 function jobValue(job) {
   const invoice = Number(job.invoice && job.invoice.amount) || 0;
-  const po = Number(job.po && job.po.amount) || 0;
   const quote = Number(job.quotation && job.quotation.amount) || 0;
-  return invoice || po || quote;
+  return invoice || quote || itemsTotal(job) || Number(job.estimate) || 0;
 }
 function invoiced(job) { return Number(job.invoice && job.invoice.amount) || 0; }
 function balanceOf(job) { return Math.max(0, invoiced(job) - paidTotal(job)); }
@@ -70,21 +78,19 @@ function overdueDays(job) {
   return Math.max(0, daysBetween(due, todayIso()));
 }
 function needsInvoice(job) {
-  const delivered = (job.delivery || {}).status === "delivered" || (job.delivery || {}).status === "acknowledged";
-  return delivered && !hasDoc(job, "invoice");
+  return (job.quotation || {}).status === "won" && !hasDoc(job, "invoice");
 }
 function quoteOpen(job) {
   const status = (job.quotation || {}).status;
   return hasDoc(job, "quotation") && (status === "sent" || status === "draft") && !hasDoc(job, "po");
 }
 
+function jobDate(job) { return job.date || (job.quotation || {}).date || (job.invoice || {}).date || ""; }
+
 function stageOf(job) {
   if (isPaid(job)) return { key: "paid", label: "Selesai" };
   if (hasDoc(job, "invoice")) return { key: "invoiced", label: paidTotal(job) > 0 ? "Bayaran separa" : "Invois dihantar" };
-  if (needsInvoice(job)) return { key: "toinvoice", label: "Perlu invois" };
-  if (hasDoc(job, "delivery")) return { key: "delivery", label: "Dalam penghantaran" };
-  if (hasDoc(job, "po")) return { key: "po", label: "PO diterima" };
-  if (hasDoc(job, "quotation")) return { key: "quote", label: "Quotation" };
+  if (hasDoc(job, "quotation")) return { key: "quote", label: "Sebut harga" };
   return { key: "new", label: "Baharu" };
 }
 
@@ -116,15 +122,12 @@ function downloadCsv(filename, rows) {
 /* ---------- Langkah dalam bahasa mudah ---------- */
 const STEPS = [
   { key: "quotation", name: "Sebut harga" },
-  { key: "po", name: "PO pelanggan" },
-  { key: "delivery", name: "Penghantaran" },
   { key: "invoice", name: "Invois" },
   { key: "payment", name: "Bayaran" }
 ];
 function stepDone(job, key) {
   if (key === "payment") return isPaid(job);
   if (key === "quotation") return hasDoc(job, "quotation") && (job.quotation.status === "sent" || job.quotation.status === "won");
-  if (key === "delivery") return ["delivered", "acknowledged"].includes((job.delivery || {}).status);
   return hasDoc(job, key);
 }
 function stepsDoneCount(job) { return STEPS.filter(step => stepDone(job, step.key)).length; }
@@ -132,10 +135,8 @@ function stepsDoneCount(job) { return STEPS.filter(step => stepDone(job, step.ke
 /* Jumlah yang dicadang untuk peringkat seterusnya — supaya tak payah taip semula */
 function suggestedAmount(job, key) {
   const quote = Number((job.quotation || {}).amount) || 0;
-  const po = Number((job.po || {}).amount) || 0;
-  if (key === "quotation") return Number(job.estimate) || quote;
-  if (key === "po") return quote || Number(job.estimate) || 0;
-  if (key === "invoice") return po || quote || Number(job.estimate) || 0;
+  if (key === "quotation") return itemsTotal(job) || Number(job.estimate) || quote;
+  if (key === "invoice") return itemsTotal(job) || quote || Number(job.estimate) || 0;
   if (key === "payment") return balanceOf(job);
   return 0;
 }
@@ -143,25 +144,19 @@ function suggestedAmount(job, key) {
 /* Apa yang patut dibuat seterusnya untuk job ini */
 function nextAction(job) {
   const quote = job.quotation || {};
-  if (!hasDoc(job, "quotation") && !hasDoc(job, "po")) {
-    return { id: "quotation", cta: "Buat sebut harga", title: "Buat sebut harga", hint: "Rekod harga yang kau beri kepada pelanggan.", open: "quotation" };
+  if (!hasDoc(job, "quotation") && !hasDoc(job, "invoice")) {
+    return { id: "quotation", cta: "Buat sebut harga", title: "Buat sebut harga", hint: "Rekod harga yang kau beri kepada pelanggan. Kalau pelanggan terus minta invois, tekan butang kedua.", open: "quotation", secondary: { cta: "Terus tanda invois dihantar", instant: "invoice-sent" } };
   }
-  if (hasDoc(job, "quotation") && quote.status === "draft") {
-    return { id: "send-quote", cta: "Tandakan sudah dihantar", title: "Hantar sebut harga", hint: `Sebut harga ${money(quote.amount)} masih draf. Tandakan bila dah dihantar kepada pelanggan.`, instant: "send-quote" };
+  if (hasDoc(job, "quotation") && quote.status === "draft" && !hasDoc(job, "invoice")) {
+    return { id: "send-quote", cta: "Tandakan sudah dihantar", title: "Hantar sebut harga kepada pelanggan", hint: `Sebut harga ${money(quote.amount)} masih draf. Cetak atau hantar dokumen, kemudian tandakan di sini.`, instant: "send-quote", secondary: { cta: "Cetak sebut harga", print: "quotation" } };
   }
   if (quote.status === "lost") return null;
-  if (!hasDoc(job, "po")) {
-    return { id: "po", cta: "Pelanggan setuju — rekod PO", title: "Tunggu jawapan pelanggan", hint: "Bila pelanggan setuju, rekod nombor PO mereka di sini.", open: "po", secondary: { cta: "Pelanggan tolak", instant: "lost" } };
-  }
-  if (!stepDone(job, "delivery")) {
-    return { id: "deliver", cta: "Tandakan sudah dihantar", title: "Hantar barang / siapkan kerja", hint: "Satu tekan sahaja — nombor DO dan tarikh hari ini diisi automatik.", instant: "deliver" };
-  }
   if (!hasDoc(job, "invoice")) {
-    return { id: "invoice", cta: `Keluarkan invois ${money(suggestedAmount(job, "invoice"))}`, title: "Keluarkan invois", hint: "Kerja dah sampai kepada pelanggan. Jumlah dan tarikh tempoh diisi automatik.", open: "invoice" };
+    return { id: "invoice", cta: `Tanda invois dihantar ${money(suggestedAmount(job, "invoice"))}`, title: "Invois sudah dihantar kepada pelanggan?", hint: "Satu tekan sahaja. Jumlah dibawa dari sebut harga dan tarikh jatuh tempo dikira automatik — kau tak perlu buat apa-apa dokumen di sini.", instant: "invoice-sent", secondary: { cta: "Pelanggan tolak", instant: "lost" } };
   }
   if (balanceOf(job) > 0.004) {
     const late = overdueDays(job);
-    return { id: "payment", cta: `Rekod bayaran ${money(balanceOf(job))}`, title: late ? `Kejar bayaran — lewat ${late} hari` : "Tunggu bayaran", hint: late ? `Invois sepatutnya dibayar pada ${dateLabel(dueDateOf(job))}.` : `Tempoh bayaran ${dateLabel(dueDateOf(job))}.`, open: "payment", urgent: Boolean(late) };
+    return { id: "payment", cta: `Rekod bayaran ${money(balanceOf(job))}`, title: late ? `Kejar bayaran — lewat ${late} hari` : "Tunggu bayaran masuk", hint: late ? `Invois sepatutnya dibayar pada ${dateLabel(dueDateOf(job))}.` : `Tempoh bayaran ${dateLabel(dueDateOf(job))}.`, open: "payment", urgent: Boolean(late), secondary: { cta: "Cetak invois", print: "invoice" } };
   }
   return null;
 }
@@ -170,11 +165,23 @@ function nextAction(job) {
 function applyInstant(job, jobsList, action) {
   const settings = readSettings();
   if (action === "send-quote") { job.quotation = { ...(job.quotation || {}), status: "sent" }; return "Sebut harga ditandakan sudah dihantar."; }
-  if (action === "lost") { job.quotation = { ...(job.quotation || {}), status: "lost" }; return "Job ditandakan pelanggan tolak."; }
-  if (action === "deliver") {
-    job.delivery = { ...(job.delivery || {}), no: (job.delivery || {}).no || nextNumber(settings.prefixDO, allNumbers(jobsList, "delivery")), date: (job.delivery || {}).date || todayIso(), status: "delivered" };
-    if (job.quotation && job.quotation.status !== "won") job.quotation.status = "won";
-    return "Ditandakan sudah dihantar.";
+  if (action === "lost") { job.quotation = { ...(job.quotation || {}), status: "lost" }; return "Kerja ditandakan pelanggan tolak."; }
+  if (action === "invoice-sent") {
+    const terms = Number(settings.terms) || 30;
+    const date = todayIso();
+    const due = new Date(`${date}T12:00:00`); due.setDate(due.getDate() + terms);
+    const existing = job.invoice || {};
+    job.invoice = {
+      ...existing,
+      no: existing.no || nextNumber(settings.prefixInvoice, allNumbers(jobsList, "invoice")),
+      date: existing.date || date,
+      amount: Number(existing.amount) || suggestedAmount(job, "invoice"),
+      terms: existing.terms ?? terms,
+      dueDate: existing.dueDate || due.toISOString().slice(0, 10),
+      sent: true, sentAt: date
+    };
+    if (job.quotation && job.quotation.status && job.quotation.status !== "won") job.quotation.status = "won";
+    return `Invois ditanda sudah dihantar — tempoh bayaran ${dateLabel(job.invoice.dueDate)}.`;
   }
   return "";
 }

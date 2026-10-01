@@ -27,7 +27,7 @@ function visibleJobs() {
     if (jobFilter === "paid") return isPaid(job);
     if (jobFilter === "overdue") return overdueDays(job) > 0;
     return !isPaid(job) && (job.quotation || {}).status !== "lost";
-  }).sort((a, b) => (overdueDays(b) - overdueDays(a)) || (b.createdAt || 0) - (a.createdAt || 0));
+  }).sort((a, b) => (overdueDays(b) - overdueDays(a)) || (jobDate(b) || "").localeCompare(jobDate(a) || "") || (b.createdAt || 0) - (a.createdAt || 0));
 }
 
 /* ---------- Panel "Apa perlu buat" ---------- */
@@ -93,7 +93,7 @@ function trackMarkup(job) {
     return `<span class="dot ${isDone ? "done" : isNow ? "now" : ""}" title="${step.name}"></span>`;
   }).join("");
   const current = STEPS[Math.min(done, STEPS.length - 1)];
-  const label = done === STEPS.length ? "Semua selesai" : `Langkah ${done + 1} daripada 5 · ${current.name}`;
+  const label = done === STEPS.length ? "Semua selesai" : `Langkah ${done + 1} daripada ${STEPS.length} · ${current.name}`;
   return `<div class="track"><div class="dots">${dots}</div><span class="track-label">${label}</span></div>`;
 }
 
@@ -125,7 +125,7 @@ function renderJobs() {
       : paidTotal(job) > 0 ? `<span class="pill">Baki ${money(balanceOf(job))}</span>` : "";
 
     card.innerHTML = `<a class="job-link" href="job.html?id=${encodeURIComponent(job.id)}">
-        <div class="job-card-top"><div class="job-ident"><span class="job-no"></span><h3></h3><p class="job-sub"></p></div><div class="job-amount"><strong>${money(jobValue(job))}</strong></div></div>
+        <div class="job-card-top"><div class="job-ident"><span class="job-no"></span><h3></h3><p class="job-sub"></p><p class="job-date"></p></div><div class="job-amount"><strong>${money(jobValue(job))}</strong></div></div>
         ${trackMarkup(job)}
         ${status ? `<div class="job-notes">${status}</div>` : ""}
       </a>
@@ -133,6 +133,7 @@ function renderJobs() {
     card.querySelector(".job-no").textContent = job.jobNo || "—";
     card.querySelector("h3").textContent = job.customer || "Tanpa nama";
     card.querySelector(".job-sub").textContent = job.title || "";
+    card.querySelector(".job-date").textContent = jobDate(job) ? `Tarikh kerja: ${dateLabel(jobDate(job))}` : "Tiada tarikh";
     list.append(card);
   });
 }
@@ -158,7 +159,7 @@ document.addEventListener("click", event => {
   }
 });
 
-$("#openNewJob").addEventListener("click", () => { $("#newJobDialog").showModal(); $("#jobCustomer").focus(); });
+$("#openNewJob").addEventListener("click", () => { $("#jobDate").value = todayIso(); $("#newJobDialog").showModal(); $("#jobCustomer").focus(); });
 document.querySelectorAll("[data-close]").forEach(button => button.addEventListener("click", () => button.closest("dialog").close()));
 
 $("#jobForm").addEventListener("submit", event => {
@@ -167,31 +168,37 @@ $("#jobForm").addEventListener("submit", event => {
   const title = $("#jobTitle").value.trim();
   if (!customer || !title) return;
   const estimate = Number($("#jobEstimate").value) || 0;
+  const workDate = $("#jobDate").value || todayIso();
   const settings = readSettings();
-  const job = { id: newId(), jobNo: nextNumber(settings.prefixJob, allNumbers(jobs, "jobNo")), customer, title, estimate, createdAt: Date.now(), quotation: {}, po: {}, delivery: {}, invoice: {}, payments: [] };
-  if (estimate > 0) {
-    job.quotation = { no: nextNumber(settings.prefixQuote, allNumbers(jobs, "quotation")), date: todayIso(), amount: estimate, status: "draft" };
+  const job = { id: newId(), jobNo: nextNumber(settings.prefixJob, allNumbers(jobs, "jobNo")), customer, title, estimate, date: workDate, createdAt: Date.now(), quotation: {}, po: {}, delivery: {}, invoice: {}, payments: [] };
+  const startAt = $("#jobStart").value;
+  if (estimate > 0) job.items = [{ description: title, qty: 1, price: estimate }];
+  if (estimate > 0 && startAt === "quotation") {
+    job.quotation = { no: nextNumber(settings.prefixQuote, allNumbers(jobs, "quotation")), date: workDate, amount: estimate, status: "draft" };
+  } else if (estimate > 0 && startAt === "invoice") {
+    const due = new Date(`${workDate}T12:00:00`); due.setDate(due.getDate() + (Number(settings.terms) || 30));
+    job.invoice = { no: nextNumber(settings.prefixInvoice, allNumbers(jobs, "invoice")), date: workDate, amount: estimate, terms: Number(settings.terms) || 30, dueDate: due.toISOString().slice(0, 10), sent: true, sentAt: workDate };
   }
   jobs.push(job);
   writeJobs(jobs);
   event.target.reset();
   $("#newJobDialog").close();
   renderAll();
-  toast(estimate > 0 ? "Kerja disimpan dan sebut harga disediakan." : "Kerja disimpan.");
+  toast(estimate <= 0 ? "Kerja disimpan." : startAt === "invoice" ? "Kerja disimpan dan invois ditanda sudah dihantar." : "Kerja disimpan dan sebut harga disediakan.");
 });
 
 /* Butang dalam empty state */
 document.addEventListener("click", event => {
   const button = event.target.closest("[data-onboard]");
   if (!button) return;
-  if (button.dataset.onboard === "new") { $("#newJobDialog").showModal(); $("#jobCustomer").focus(); return; }
+  if (button.dataset.onboard === "new") { $("#jobDate").value = todayIso(); $("#newJobDialog").showModal(); $("#jobCustomer").focus(); return; }
   const settings = readSettings();
   const demo = [
     { id: newId(), jobNo: "JOB-CONTOH-1", demo: true, customer: "ABC Sdn Bhd (contoh)", title: "Bekalan & pasang signage", createdAt: Date.now() - 3000,
-      quotation: { no: "QT-CONTOH-1", date: todayIso(), amount: 12000, status: "sent" }, po: { no: "PO-ABC-8891", date: todayIso(), amount: 12000 },
-      delivery: { no: "DO-CONTOH-1", date: todayIso(), status: "delivered", person: "En. Ridzuan" }, invoice: {}, payments: [] },
+      quotation: { no: "QT-CONTOH-1", date: todayIso(), amount: 12000, status: "won" },
+      invoice: {}, payments: [], items: [{ description: "Signage 8ft x 4ft", qty: 1, price: 9000 }, { description: "Kerja pemasangan", qty: 1, price: 3000 }] },
     { id: newId(), jobNo: "JOB-CONTOH-2", demo: true, customer: "Maju Jaya Enterprise (contoh)", title: "Servis penyelenggaraan", createdAt: Date.now() - 2000,
-      quotation: { no: "QT-CONTOH-2", date: todayIso(), amount: 3500, status: "sent" }, po: {}, delivery: {}, invoice: {}, payments: [] }
+      quotation: { no: "QT-CONTOH-2", date: todayIso(), amount: 3500, status: "sent" }, invoice: {}, payments: [], items: [{ description: "Servis penyelenggaraan bulanan", qty: 1, price: 3500 }] }
   ];
   jobs.push(...demo);
   writeJobs(jobs);
