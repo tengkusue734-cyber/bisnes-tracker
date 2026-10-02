@@ -6,13 +6,13 @@
     <meta name="theme-color" content="#0a2647" />
     <meta name="description" content="Rekod sebut harga, invois dan bayaran pelanggan — dengan dokumen boleh cetak." />
     <link rel="manifest" href="manifest.json" />
-    <link rel="icon" href="favicon.ico?v=5" sizes="any" />
-    <link rel="icon" href="icon.svg?v=5" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=5" />
+    <link rel="icon" href="favicon.ico?v=6" sizes="any" />
+    <link rel="icon" href="icon.svg?v=6" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=6" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" />
-    <link rel="stylesheet" href="styles.css?v=5" />
+    <link rel="stylesheet" href="styles.css?v=6" />
     <title>Bisnes Tracker</title>
   </head>
   <body>
@@ -23,22 +23,23 @@
       </header>
       <nav class="page-nav" aria-label="Navigasi utama"><a class="active" href="index.html">Kerja saya</a><a href="reports.html">Laporan</a></nav>
 
-      <section class="today-section" aria-labelledby="todayTitle">
-        <div class="section-heading">
-          <div><p class="eyebrow">LANGKAH SETERUSNYA</p><h2 id="todayTitle">Apa perlu buat</h2></div>
-          <span class="count" id="todayCount"></span>
-        </div>
-        <div id="todayList" class="today-list" aria-live="polite"></div>
-      </section>
-
-      <button class="primary-cta" type="button" id="openNewJob">+ Kerja baharu</button>
-
       <section class="stat-grid" aria-label="Ringkasan duit">
         <article class="stat outstanding"><small>Orang belum bayar saya</small><strong id="statOutstanding">RM0.00</strong><span id="statOutstandingCount">0 invois</span></article>
         <article class="stat overdue"><small>Sudah lewat tempoh</small><strong id="statOverdue">RM0.00</strong><span id="statOverdueCount">0 invois</span></article>
         <article class="stat toinvoice"><small>Siap tapi belum invois</small><strong id="statToInvoice">RM0.00</strong><span id="statToInvoiceCount">0 kerja</span></article>
         <article class="stat quotes"><small>Sebut harga tunggu jawapan</small><strong id="statQuotes">RM0.00</strong><span id="statQuotesCount">0 sebut harga</span></article>
       </section>
+
+      <div class="work-col">
+        <button class="primary-cta" type="button" id="openNewJob">+ Kerja baharu</button>
+        <section class="today-section" aria-labelledby="todayTitle">
+          <div class="section-heading">
+            <div><p class="eyebrow">LANGKAH SETERUSNYA</p><h2 id="todayTitle">Apa perlu buat</h2></div>
+            <span class="count" id="todayCount"></span>
+          </div>
+          <div id="todayList" class="today-list" aria-live="polite"></div>
+        </section>
+      </div>
 
       <section class="list-section" aria-labelledby="jobListTitle">
         <div class="section-heading">
@@ -91,8 +92,8 @@
         </div>
       </div>
     </template>
-    <script src="biz.js?v=5"></script>
-    <script src="app.js?v=5"></script>
-    <script type="module" src="cloud.js?v=5"></script>
+    <script src="biz.js?v=6"></script>
+    <script src="app.js?v=6"></script>
+    <script type="module" src="cloud.js?v=6"></script>
   </body>
 </html>

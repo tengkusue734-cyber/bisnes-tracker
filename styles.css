@@ -163,6 +163,8 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{
 }
 .ghost-cta:hover{border-color:var(--navy); color:var(--navy-deep);}
 
+.work-col{min-width:0;}
+
 /* ---------- Kad ringkasan duit ---------- */
 .stat-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px;}
 .stat{
@@ -449,13 +451,12 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{
     grid-column:1 / -1;
   }
 
-  /* Kerja saya: tindakan + ringkasan di kiri, senarai kerja di kanan */
-  .biz-shell > .today-section,.biz-shell > .primary-cta,.biz-shell > .stat-grid{grid-column:1; align-self:stretch;}
-  .biz-shell > .today-section{max-height:520px; overflow:auto;}
-  .biz-shell > .primary-cta{max-height:76px;}
-  .biz-shell > .stat-grid{grid-template-columns:1fr 1fr; align-content:stretch;}
-  .biz-shell > .stat-grid .stat{height:100%; max-height:190px;}
-  .biz-shell > .list-section{grid-column:2; grid-row:span 3;}
+  /* Kerja saya: papan pemantauan melebar penuh di atas,
+     butang kerja baharu + "apa perlu buat" di kiri, senarai kerja di kanan */
+  .biz-shell > .stat-grid{grid-column:1 / -1; grid-template-columns:repeat(4,1fr);}
+  .biz-shell > .work-col{grid-column:1; display:grid; gap:16px; align-content:start;}
+  .biz-shell > .work-col > *{margin:0 !important;}
+  .biz-shell > .list-section{grid-column:2;}
 
   /* Butiran kerja: langkah & dokumen di kiri, bayaran di kanan */
   .job-shell > .next-card,.job-shell > .chain-wrap,.job-shell > .danger-section{grid-column:1;}
