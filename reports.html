@@ -3,20 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0f3460" />
+    <meta name="theme-color" content="#0a2647" />
     <link rel="manifest" href="manifest.json" />
-    <link rel="icon" href="favicon.ico?v=4" sizes="any" />
-    <link rel="icon" href="icon.svg?v=4" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=4" />
-    <link rel="stylesheet" href="styles.css?v=4" />
+    <link rel="icon" href="favicon.ico?v=5" sizes="any" />
+    <link rel="icon" href="icon.svg?v=5" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=5" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" />
+    <link rel="stylesheet" href="styles.css?v=5" />
     <title>Laporan · Bisnes Tracker</title>
   </head>
   <body>
-    <main class="app-shell">
+    <main class="app-shell report-shell">
       <header class="topbar"><div><p class="eyebrow">UNTUK AKAUN</p><h1>Laporan</h1></div><a class="icon-button nav-home" href="index.html" aria-label="Kembali ke pipeline">←</a></header>
       <nav class="page-nav" aria-label="Navigasi utama"><a href="index.html">Kerja saya</a><a class="active" href="reports.html">Laporan</a></nav>
 
-      <section class="list-section" aria-labelledby="agedTitle">
+      <section class="list-section aged-section" aria-labelledby="agedTitle">
         <div class="section-heading">
           <div><p class="eyebrow">HUTANG PELANGGAN (AGED RECEIVABLE)</p><h2 id="agedTitle">Siapa hutang kau, berapa lama</h2></div>
           <span class="count" id="agedTotal">RM0.00</span>
@@ -28,7 +31,7 @@
         </table></div>
       </section>
 
-      <section class="list-section" aria-labelledby="exportTitle">
+      <section class="list-section export-section" aria-labelledby="exportTitle">
         <div class="section-heading"><div><p class="eyebrow">EXPORT</p><h2 id="exportTitle">Hantar kepada akauntan</h2></div></div>
         <div class="two-columns">
           <label>Dari tarikh<input id="fromDate" type="date" /></label>
@@ -44,7 +47,7 @@
         <p id="exportStatus" class="form-help"></p>
       </section>
 
-      <section class="list-section" aria-labelledby="companyTitle">
+      <section class="list-section company-section" aria-labelledby="companyTitle">
         <div class="section-heading"><div><p class="eyebrow">UNTUK DOKUMEN</p><h2 id="companyTitle">Maklumat syarikat</h2></div></div>
         <p class="form-help">Maklumat ini muncul pada sebut harga, invois dan resit yang kau cetak. Isi sekali sahaja.</p>
         <form id="companyForm" class="stack-form">
@@ -59,7 +62,7 @@
         <p id="companyStatus" class="form-help"></p>
       </section>
 
-      <section class="list-section" aria-labelledby="settingsTitle">
+      <section class="list-section settings-section" aria-labelledby="settingsTitle">
         <div class="section-heading"><div><p class="eyebrow">TETAPAN</p><h2 id="settingsTitle">Penomboran dokumen</h2></div></div>
         <p class="form-help">Nombor seterusnya dijana automatik ikut format PREFIX-TAHUN-001. Kau masih boleh tulis nombor sendiri bila mengisi dokumen.</p>
         <form id="settingsForm" class="stack-form">
@@ -71,8 +74,8 @@
         <p id="settingsStatus" class="form-help"></p>
       </section>
     </main>
-    <script src="biz.js?v=4"></script>
-    <script src="reports.js?v=4"></script>
-    <script type="module" src="cloud.js?v=4"></script>
+    <script src="biz.js?v=5"></script>
+    <script src="reports.js?v=5"></script>
+    <script type="module" src="cloud.js?v=5"></script>
   </body>
 </html>
