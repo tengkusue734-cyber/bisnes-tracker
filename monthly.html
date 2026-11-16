@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ms">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0a2647" />
+    <link rel="icon" href="favicon.ico?v=8" sizes="any" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" />
+    <link rel="stylesheet" href="styles.css?v=8" />
+    <title>Senarai Invois Bulanan · Bisnes Tracker</title>
+  </head>
+  <body class="doc-body">
+    <div class="doc-toolbar no-print">
+      <a class="toolbar-back" href="reports.html">← Laporan</a>
+      <div class="toolbar-actions">
+        <label class="month-pick">Bulan<input id="monthPick" type="month" /></label>
+        <button type="button" class="nudge" id="prevMonth" aria-label="Bulan sebelum">‹</button>
+        <button type="button" class="nudge" id="nextMonth" aria-label="Bulan seterusnya">›</button>
+        <button type="button" class="save-button ghost" id="csvButton">CSV</button>
+        <button type="button" class="save-button" id="printButton">Cetak / Simpan PDF</button>
+      </div>
+    </div>
+
+    <div class="doc-options no-print">
+      <label><input type="checkbox" id="optTick" checked /> Ruang tanda (☐) untuk filing</label>
+      <label><input type="checkbox" id="optPayments" checked /> Sertakan senarai bayaran diterima</label>
+      <label><input type="checkbox" id="optUnpaid" /> Sertakan baki tertunggak bulan terdahulu</label>
+      <label><input type="checkbox" id="optBlank" /> Biarkan no invois &amp; resit kosong (tulis tangan)</label>
+    </div>
+
+    <p class="doc-tip no-print">Klik pada <b>No invois</b> atau <b>No resit</b> untuk taip atau betulkan nombor — ia terus disimpan. Senarai ini disusun ikut tarikh invois. Cetak dan simpan bersama salinan invois dalam fail akaun bulanan. Dalam tetingkap cetak, pilih <b>Save as PDF</b> untuk fail digital.</p>
+
+    <div id="docRoot"></div>
+
+    <script src="biz.js?v=8"></script>
+    <script src="monthly.js?v=8"></script>
+  </body>
+</html>

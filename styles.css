@@ -486,12 +486,12 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{
    ========================================================================== */
 body.doc-body{background:#eef2f7; padding:0 0 40px;}
 .doc-toolbar{
-  display:flex; justify-content:space-between; align-items:center; gap:12px;
+  display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
   padding:14px 18px; background:var(--white); border-bottom:1px solid var(--line);
   position:sticky; top:0; z-index:5;
 }
 .toolbar-back{color:var(--navy); text-decoration:none; font-size:.82rem; font-weight:800;}
-.toolbar-actions{display:flex; gap:8px;}
+.toolbar-actions{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; min-width:0;}
 .doc-tip{width:min(100%, 820px); margin:14px auto 0; padding:0 18px; color:var(--muted); font-size:.76rem; line-height:1.55;}
 .sheet-doc{
   width:min(100%, 820px); margin:16px auto; background:var(--white);
@@ -541,4 +541,100 @@ body.doc-body{background:#eef2f7; padding:0 0 40px;}
   .doc-dates > div{justify-content:flex-start;}
   .doc-bank{max-width:100%;}
   .doc-sign{text-align:left; min-width:0;}
+}
+
+
+/* ==========================================================================
+   Senarai invois bulanan (monthly.html)
+   ========================================================================== */
+.month-pick{display:flex; align-items:center; gap:8px; font-size:.74rem; font-weight:800; color:var(--muted);}
+.month-pick input{width:auto; padding:9px 11px; font-size:.8rem;}
+.nudge{
+  width:36px; height:36px; flex:none; border:1px solid var(--line); border-radius:50%;
+  background:var(--white); color:var(--navy); font-size:1.1rem; line-height:1; box-shadow:var(--sh-1);
+}
+.nudge:hover{border-color:var(--navy); background:var(--navy-light);}
+.doc-options{
+  display:flex; flex-wrap:wrap; gap:8px 20px; justify-content:center;
+  width:min(100%, 1120px); margin:14px auto 0; padding:12px 18px;
+  background:var(--white); border:1px solid var(--line); border-radius:var(--r-m); box-shadow:var(--sh-1);
+}
+.doc-options label{display:flex; align-items:center; gap:8px; font-size:.75rem; font-weight:750; color:var(--muted);}
+.doc-options input{width:auto; accent-color:var(--navy);}
+
+#docRoot .sheet-doc{
+  width:min(100%, 1120px); margin:16px auto; background:var(--white);
+  padding:40px 42px; border-radius:6px; box-shadow:0 6px 28px rgba(10,38,71,.12);
+  font-family:"Times New Roman",Georgia,serif; color:#15201b; font-size:11.5pt; line-height:1.45;
+}
+#docRoot h1{font-size:15pt; margin:0 0 2pt;}
+#docRoot h2{font-size:13pt; letter-spacing:1pt; margin:0;}
+#docRoot p{margin:0 0 3pt;}
+
+.sum-strip{display:flex; gap:10pt; margin:14pt 0 12pt;}
+.sum-box{
+  flex:1; padding:8pt 10pt; border:1px solid #c8d2cd; border-top:3pt solid var(--navy);
+  border-radius:3px; background:#f7fafc;
+}
+.sum-box small{display:block; color:#55605a; font-size:8.5pt; font-weight:bold; letter-spacing:.3pt;}
+.sum-box strong{display:block; margin-top:3pt; font-size:12pt;}
+
+.table-wrap{max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; margin-bottom:2pt;}
+.list-table{font-size:9.5pt; table-layout:fixed; width:100%; min-width:840px;}
+.list-table th,.list-table td{border:1px solid #c8d2cd; padding:5pt 6pt; vertical-align:top; word-break:break-word;}
+.list-table thead th{background:var(--navy); color:#fff; text-align:left; font-size:8.5pt; letter-spacing:.3pt;}
+.list-table .c-no{width:3.5%; text-align:center; color:#55605a;}
+.list-table .c-tick{width:3.5%; text-align:center; font-size:12pt; color:#55605a;}
+.list-table .c-date{width:9%;}
+.list-table .c-ref{width:10%;}
+.list-table .c-num{width:8.5%; text-align:right; white-space:nowrap;}
+.list-table .c-mid{width:10%; text-align:center;}
+.list-table .c-muted{color:#55605a; text-align:center;}
+.list-table tfoot .grand td{background:#eef2f7; font-weight:bold; font-size:10pt;}
+.list-table tfoot .grand td:first-child{text-align:right;}
+.list-table .st-paid{color:#15803d; font-weight:bold;}
+.list-table .st-late{color:#b42318; font-weight:bold;}
+.list-table .st-part{color:#b45309; font-weight:bold;}
+.list-table .st-due{color:#55605a;}
+
+.cell-edit{
+  display:block; min-height:1.2em; min-width:34px; padding:1px 3px; margin:-1px -3px;
+  border-radius:3px; outline:none; cursor:text;
+}
+.cell-edit:hover{background:#eef4fb; box-shadow:inset 0 -1px 0 #9bb8d6;}
+.cell-edit:focus{background:#fff; box-shadow:0 0 0 2px var(--navy); }
+.cell-edit:empty::before{content:attr(data-placeholder); color:#9aa7b4; font-style:italic;}
+.cell-edit.is-saved{background:#dcfce7; box-shadow:inset 0 -1px 0 #16a34a;}
+.ref-blank{display:block; min-height:1.3em; border-bottom:1px solid #9aa7b4;}
+
+.sec-title{margin:20pt 0 6pt; font-size:11pt; color:var(--navy); border-bottom:1px solid var(--navy); padding-bottom:4pt;}
+.print-foot{display:flex; gap:30pt; margin-top:26pt;}
+.print-foot > div{flex:1;}
+
+@media print{
+  .doc-options{display:none !important;}
+  .table-wrap{overflow:visible !important;}
+  .cell-edit{background:none !important; box-shadow:none !important; padding:0; margin:0;}
+  .cell-edit:empty::before{content:"";}
+  .list-table{min-width:0 !important;}
+  #docRoot .sheet-doc{width:auto; margin:0; padding:0; box-shadow:none; border-radius:0;}
+  .sec-title{page-break-after:avoid;}
+  .list-table{page-break-inside:auto;}
+  .list-table tr{page-break-inside:avoid;}
+  .list-table thead{display:table-header-group;}
+  @page{size:A4 landscape; margin:12mm;}
+}
+@media (max-width:760px){
+  #docRoot .sheet-doc{padding:22px 16px;}
+  #docRoot .doc-company,#docRoot .doc-title{display:block; width:100%; text-align:left;}
+  #docRoot .doc-title{margin-top:10pt;}
+  .sum-strip{flex-wrap:wrap;}
+  .sum-box{flex:1 1 44%;}
+  .list-table{font-size:8pt; min-width:760px;}
+  .list-table th,.list-table td{padding:4pt 3pt;}
+  .list-table .c-date{width:48pt; white-space:normal;}
+  .list-table .c-ref{width:54pt;}
+  .list-table .c-num{width:50pt;}
+  .list-table .c-mid{width:50pt;}
+  .print-foot{flex-direction:column; gap:18pt;}
 }
